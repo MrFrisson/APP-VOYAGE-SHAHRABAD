@@ -22,6 +22,8 @@ import { MobileTabBar } from './components/Navigation/MobileTabBar';
 import { TripHeroBanner } from './components/Trips/TripHeroBanner';
 import { TripModal } from './components/Trips/TripModal';
 import { TripGalleryModal } from './components/Trips/TripGalleryModal';
+import { TripsHubView } from './components/Trips/TripsHubView';
+import { TripColorCalendarBar } from './components/Trips/TripColorCalendarBar';
 import { LeafletMap } from './components/Map/LeafletMap';
 import { ItineraryView } from './components/Itinerary/ItineraryView';
 import { ActivitiesView } from './components/Activities/ActivitiesView';
@@ -48,6 +50,7 @@ export default function App() {
   const [showCalendarInItinerary, setShowCalendarInItinerary] = useState(false);
   const [staysTransportsSubTab, setStaysTransportsSubTab] = useState<'stays' | 'transports'>('stays');
   const [docsSubTab, setDocsSubTab] = useState<'documents' | 'notes'>('documents');
+  const [isMobilePreviewMode, setIsMobilePreviewMode] = useState<boolean>(false);
 
   // Modals
   const [isTripModalOpen, setIsTripModalOpen] = useState(false);
@@ -57,7 +60,8 @@ export default function App() {
 
   // Global Currency (controls display across the entire app)
   const [globalCurrency, setGlobalCurrency] = useState<string>(() => {
-    const active = loadTravelData().trips.find((t) => t.id === loadTravelData().activeTripId) || loadTravelData().trips[0];
+    const loaded = loadTravelData();
+    const active = loaded.trips.find((t) => t.id === loaded.activeTripId) || loaded.trips[0];
     return active?.currency || 'EUR';
   });
 
@@ -76,23 +80,37 @@ export default function App() {
     saveTravelData(appData);
   }, [appData]);
 
-  // Current active trip
+  // Current active trip (can be null if 0 trips exist)
   const currentTrip =
-    appData.trips.find((t) => t.id === appData.activeTripId) || appData.trips[0];
+    appData.trips.find((t) => t.id === appData.activeTripId) || appData.trips[0] || null;
 
   // Filtered items for current active trip
-  const tripSteps = appData.steps
-    .filter((s) => s.tripId === currentTrip.id)
-    .sort((a, b) => a.order - b.order);
-  const tripAccommodations = appData.accommodations.filter(
-    (a) => a.tripId === currentTrip.id
-  );
-  const tripTransports = appData.transports.filter((t) => t.tripId === currentTrip.id);
-  const tripActivities = appData.activities.filter((a) => a.tripId === currentTrip.id);
-  const tripExpenses = appData.expenses.filter((e) => e.tripId === currentTrip.id);
-  const tripDocuments = appData.documents.filter((d) => d.tripId === currentTrip.id);
-  const tripLinks = appData.links.filter((l) => l.tripId === currentTrip.id);
-  const tripNotes = appData.notes.filter((n) => n.tripId === currentTrip.id);
+  const tripSteps = currentTrip
+    ? appData.steps
+        .filter((s) => s.tripId === currentTrip.id)
+        .sort((a, b) => a.order - b.order)
+    : [];
+  const tripAccommodations = currentTrip
+    ? appData.accommodations.filter((a) => a.tripId === currentTrip.id)
+    : [];
+  const tripTransports = currentTrip
+    ? appData.transports.filter((t) => t.tripId === currentTrip.id)
+    : [];
+  const tripActivities = currentTrip
+    ? appData.activities.filter((a) => a.tripId === currentTrip.id)
+    : [];
+  const tripExpenses = currentTrip
+    ? appData.expenses.filter((e) => e.tripId === currentTrip.id)
+    : [];
+  const tripDocuments = currentTrip
+    ? appData.documents.filter((d) => d.tripId === currentTrip.id)
+    : [];
+  const tripLinks = currentTrip
+    ? appData.links.filter((l) => l.tripId === currentTrip.id)
+    : [];
+  const tripNotes = currentTrip
+    ? appData.notes.filter((n) => n.tripId === currentTrip.id)
+    : [];
 
   // Switch Active Trip
   const handleSelectTrip = (tripId: string) => {
@@ -142,19 +160,30 @@ export default function App() {
   };
 
   // Duplicate Trip
-  const handleDuplicateTrip = () => {
+  const handleDuplicateTrip = (tripToDuplicate?: Trip) => {
+    const sourceTrip = tripToDuplicate || currentTrip;
+    if (!sourceTrip) return;
     const newTripId = `trip-${Date.now()}`;
     const duplicatedTrip: Trip = {
-      ...currentTrip,
+      ...sourceTrip,
       id: newTripId,
-      title: `${currentTrip.title} (Copie)`,
+      title: `${sourceTrip.title} (Copie)`,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
     // Duplicate all child entities linked to this trip
+    const sourceSteps = appData.steps.filter((s) => s.tripId === sourceTrip.id);
+    const sourceAccommodations = appData.accommodations.filter((a) => a.tripId === sourceTrip.id);
+    const sourceTransports = appData.transports.filter((t) => t.tripId === sourceTrip.id);
+    const sourceActivities = appData.activities.filter((a) => a.tripId === sourceTrip.id);
+    const sourceExpenses = appData.expenses.filter((e) => e.tripId === sourceTrip.id);
+    const sourceDocuments = appData.documents.filter((d) => d.tripId === sourceTrip.id);
+    const sourceLinks = appData.links.filter((l) => l.tripId === sourceTrip.id);
+    const sourceNotes = appData.notes.filter((n) => n.tripId === sourceTrip.id);
+
     const stepIdMap: Record<string, string> = {};
-    const newSteps: Step[] = tripSteps.map((s) => {
+    const newSteps: Step[] = sourceSteps.map((s) => {
       const newStepId = `step-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
       stepIdMap[s.id] = newStepId;
       return {
@@ -164,49 +193,49 @@ export default function App() {
       };
     });
 
-    const newAccommodations: Accommodation[] = tripAccommodations.map((a) => ({
+    const newAccommodations: Accommodation[] = sourceAccommodations.map((a) => ({
       ...a,
       id: `acc-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       tripId: newTripId,
       stepId: a.stepId ? stepIdMap[a.stepId] : undefined,
     }));
 
-    const newTransports: Transport[] = tripTransports.map((t) => ({
+    const newTransports: Transport[] = sourceTransports.map((t) => ({
       ...t,
       id: `trans-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       tripId: newTripId,
       stepId: t.stepId ? stepIdMap[t.stepId] : undefined,
     }));
 
-    const newActivities: Activity[] = tripActivities.map((act) => ({
+    const newActivities: Activity[] = sourceActivities.map((act) => ({
       ...act,
       id: `act-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       tripId: newTripId,
       stepId: act.stepId ? stepIdMap[act.stepId] : undefined,
     }));
 
-    const newExpenses: Expense[] = tripExpenses.map((e) => ({
+    const newExpenses: Expense[] = sourceExpenses.map((e) => ({
       ...e,
       id: `exp-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       tripId: newTripId,
       stepId: e.stepId ? stepIdMap[e.stepId] : undefined,
     }));
 
-    const newDocuments: DocumentItem[] = tripDocuments.map((d) => ({
+    const newDocuments: DocumentItem[] = sourceDocuments.map((d) => ({
       ...d,
       id: `doc-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       tripId: newTripId,
       stepId: d.stepId ? stepIdMap[d.stepId] : undefined,
     }));
 
-    const newLinks: GeneralLink[] = tripLinks.map((l) => ({
+    const newLinks: GeneralLink[] = sourceLinks.map((l) => ({
       ...l,
       id: `link-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       tripId: newTripId,
       stepId: l.stepId ? stepIdMap[l.stepId] : undefined,
     }));
 
-    const newNotes: GeneralNote[] = tripNotes.map((n) => ({
+    const newNotes: GeneralNote[] = sourceNotes.map((n) => ({
       ...n,
       id: `note-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       tripId: newTripId,
@@ -229,33 +258,38 @@ export default function App() {
     showToast('Voyage dupliqué avec tous ses éléments !');
   };
 
-  // Delete Trip
-  const handleDeleteTrip = () => {
-    if (appData.trips.length <= 1) {
-      alert('Vous ne pouvez pas supprimer le dernier voyage restant.');
-      return;
-    }
+  // Delete Trip (allows deleting down to 0 trips)
+  const handleDeleteTrip = (tripIdToDelete?: string) => {
+    const targetTrip = tripIdToDelete
+      ? appData.trips.find((t) => t.id === tripIdToDelete)
+      : currentTrip;
+
+    if (!targetTrip) return;
 
     if (
       window.confirm(
-        `Êtes-vous certain de vouloir supprimer le voyage "${currentTrip.title}" et toutes ses données associées ?`
+        `Êtes-vous certain de vouloir supprimer le voyage "${targetTrip.title}" et toutes ses données associées ?`
       )
     ) {
-      const remainingTrips = appData.trips.filter((t) => t.id !== currentTrip.id);
+      const remainingTrips = appData.trips.filter((t) => t.id !== targetTrip.id);
+      const nextActiveTripId = remainingTrips.length > 0 ? remainingTrips[0].id : '';
       setAppData((prev) => ({
         ...prev,
         trips: remainingTrips,
-        activeTripId: remainingTrips[0].id,
-        steps: prev.steps.filter((s) => s.tripId !== currentTrip.id),
-        accommodations: prev.accommodations.filter((a) => a.tripId !== currentTrip.id),
-        transports: prev.transports.filter((t) => t.tripId !== currentTrip.id),
-        activities: prev.activities.filter((act) => act.tripId !== currentTrip.id),
-        expenses: prev.expenses.filter((e) => e.tripId !== currentTrip.id),
-        documents: prev.documents.filter((d) => d.tripId !== currentTrip.id),
-        links: prev.links.filter((l) => l.tripId !== currentTrip.id),
-        notes: prev.notes.filter((n) => n.tripId !== currentTrip.id),
+        activeTripId: nextActiveTripId,
+        steps: prev.steps.filter((s) => s.tripId !== targetTrip.id),
+        accommodations: prev.accommodations.filter((a) => a.tripId !== targetTrip.id),
+        transports: prev.transports.filter((t) => t.tripId !== targetTrip.id),
+        activities: prev.activities.filter((act) => act.tripId !== targetTrip.id),
+        expenses: prev.expenses.filter((e) => e.tripId !== targetTrip.id),
+        documents: prev.documents.filter((d) => d.tripId !== targetTrip.id),
+        links: prev.links.filter((l) => l.tripId !== targetTrip.id),
+        notes: prev.notes.filter((n) => n.tripId !== targetTrip.id),
       }));
       showToast('Voyage supprimé.');
+      if (remainingTrips.length === 0) {
+        setActiveTab('trips');
+      }
     }
   };
 
@@ -531,255 +565,312 @@ export default function App() {
           setEditingTrip(null);
           setIsTripModalOpen(true);
         }}
-        onOpenTripsGallery={() => setIsGalleryModalOpen(true)}
+        onOpenTripsGallery={() => setActiveTab('trips')}
         onShare={() => {
           if (typeof navigator !== 'undefined' && navigator.clipboard) {
             navigator.clipboard.writeText(window.location.href).catch(() => {});
           }
-          showToast('✦ Lien du voyage copié dans le presse-papier !');
+          showToast('Lien du voyage copié dans le presse-papier !');
         }}
         onOpenSyncModal={() => setIsSyncModalOpen(true)}
         activeTab={activeTab}
         onSelectTab={setActiveTab}
+        isMobilePreviewMode={isMobilePreviewMode}
+        onToggleMobilePreview={() => setIsMobilePreviewMode(!isMobilePreviewMode)}
       />
 
-      {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 lg:pb-12">
-        {/* Active Trip Hero Banner */}
-        <TripHeroBanner
-          trip={currentTrip}
-          steps={tripSteps}
-          tripsCount={appData.trips.length}
-          displayCurrency={globalCurrency}
-          onEditTrip={() => {
-            setEditingTrip(currentTrip);
-            setIsTripModalOpen(true);
-          }}
-          onDuplicateTrip={handleDuplicateTrip}
-          onDeleteTrip={handleDeleteTrip}
-          onSelectOtherTrip={() => setIsGalleryModalOpen(true)}
-          onShareTrip={() => {
-            if (typeof navigator !== 'undefined' && navigator.clipboard) {
-              navigator.clipboard.writeText(window.location.href).catch(() => {});
-            }
-            showToast('✦ Lien de partage du voyage copié !');
-          }}
-        />
-
-        {/* Tab 1: Itinéraire & Étapes */}
-        {activeTab === 'itinerary' && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-end">
-              <button
-                type="button"
-                onClick={() => setShowCalendarInItinerary(!showCalendarInItinerary)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors ${
-                  showCalendarInItinerary
-                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                    : 'bg-slate-900 text-slate-300 border-slate-700 hover:text-white'
-                }`}
-              >
-                <Calendar className="w-3.5 h-3.5" />
-                <span>
-                  {showCalendarInItinerary
-                    ? 'Masquer la vue calendrier'
-                    : 'Afficher le calendrier dynamique'}
-                </span>
-              </button>
+      {/* Device Mode Wrapper (Computer full-width vs. Mobile phone mockup) */}
+      <div className={isMobilePreviewMode ? "py-8 px-4 flex justify-center bg-[#05070a] min-h-[calc(100vh-65px)]" : "flex-1 flex flex-col"}>
+        <div className={isMobilePreviewMode ? "w-full max-w-[430px] bg-[#070a0e] rounded-[48px] border-[10px] border-[#1d2632] shadow-[0_25px_80px_rgba(0,0,0,0.85)] overflow-hidden flex flex-col relative ring-1 ring-[rgba(198,165,106,0.35)] min-h-[840px]" : "flex-1 flex flex-col"}>
+          {isMobilePreviewMode && (
+            <div className="w-full bg-[#111820] py-2.5 px-6 flex items-center justify-between text-[11px] text-[#98a2a8] border-b border-[rgba(198,165,106,0.2)] select-none shrink-0">
+              <span className="font-mono text-[#eadcc0] font-semibold">09:41</span>
+              {/* Dynamic Island Pill */}
+              <div className="w-24 h-4 bg-[#070a0e] rounded-full mx-auto border border-[#222f3d] flex items-center justify-center">
+                <div className="w-2.5 h-2.5 rounded-full bg-[#151d26]" />
+              </div>
+              <span className="text-[10px] font-mono text-[#c6a56a] font-semibold">5G 100%</span>
             </div>
+          )}
 
-            {showCalendarInItinerary && (
-              <CalendarView
-                tripStartDate={currentTrip.startDate}
-                tripEndDate={currentTrip.endDate}
+          {/* Main Container */}
+          <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 lg:pb-12">
+            {/* Tab: Dedicated Trips Hub View (Mes Voyages) or when zero trips exist */}
+            {(activeTab === 'trips' || !currentTrip) && (
+              <TripsHubView
+                trips={appData.trips}
+                activeTripId={currentTrip?.id}
+                allSteps={appData.steps}
+                displayCurrency={globalCurrency}
+                onSelectTrip={(id) => {
+                  handleSelectTrip(id);
+                  setActiveTab('itinerary');
+                }}
+                onOpenNewTripModal={() => {
+                  setEditingTrip(null);
+                  setIsTripModalOpen(true);
+                }}
+                onEditTrip={(trip) => {
+                  setEditingTrip(trip);
+                  setIsTripModalOpen(true);
+                }}
+                onDuplicateTrip={(trip) => handleDuplicateTrip(trip)}
+                onDeleteTrip={(id) => handleDeleteTrip(id)}
+              />
+            )}
+
+            {/* When a trip is active and not on the trips hub */}
+            {currentTrip && activeTab !== 'trips' && (
+              <>
+                {/* Active Trip Hero Banner */}
+                <TripHeroBanner
+                  trip={currentTrip}
+                  steps={tripSteps}
+                  tripsCount={appData.trips.length}
+                  displayCurrency={globalCurrency}
+                  onEditTrip={() => {
+                    setEditingTrip(currentTrip);
+                    setIsTripModalOpen(true);
+                  }}
+                  onDuplicateTrip={() => handleDuplicateTrip(currentTrip)}
+                  onDeleteTrip={() => handleDeleteTrip(currentTrip.id)}
+                  onSelectOtherTrip={() => setActiveTab('trips')}
+                  onShareTrip={() => {
+                    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                      navigator.clipboard.writeText(window.location.href).catch(() => {});
+                    }
+                    showToast('Lien de partage du voyage copié !');
+                  }}
+                />
+
+                {/* Destination Color Calendar Timeline Bar */}
+                <div className="mb-6">
+                  <TripColorCalendarBar
+                    steps={tripSteps}
+                    tripStartDate={currentTrip.startDate}
+                    tripEndDate={currentTrip.endDate}
+                    onSelectStep={() => setActiveTab('itinerary')}
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Tab 1: Itinéraire & Étapes */}
+            {currentTrip && activeTab === 'itinerary' && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setShowCalendarInItinerary(!showCalendarInItinerary)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors ${
+                      showCalendarInItinerary
+                        ? 'bg-[rgba(198,165,106,0.18)] text-[#eadcc0] border-[rgba(198,165,106,0.4)]'
+                        : 'bg-[#111820] text-[#98a2a8] border-[rgba(255,255,255,0.08)] hover:text-[#edf0eb]'
+                    }`}
+                  >
+                    <Calendar className="w-3.5 h-3.5 text-[#c6a56a]" />
+                    <span>
+                      {showCalendarInItinerary
+                        ? 'Masquer la vue calendrier'
+                        : 'Afficher le calendrier dynamique'}
+                    </span>
+                  </button>
+                </div>
+
+                {showCalendarInItinerary && (
+                  <CalendarView
+                    tripStartDate={currentTrip.startDate}
+                    tripEndDate={currentTrip.endDate}
+                    steps={tripSteps}
+                    activities={tripActivities}
+                    accommodations={tripAccommodations}
+                    transports={tripTransports}
+                    onAddActivityForDate={() => setActiveTab('activities')}
+                  />
+                )}
+
+                <ItineraryView
+                  tripId={currentTrip.id}
+                  steps={tripSteps}
+                  accommodations={tripAccommodations}
+                  activities={tripActivities}
+                  transports={tripTransports}
+                  expenses={tripExpenses}
+                  displayCurrency={globalCurrency}
+                  onAddStep={handleAddStep}
+                  onUpdateStep={handleUpdateStep}
+                  onDeleteStep={handleDeleteStep}
+                  onReorderSteps={handleReorderSteps}
+                />
+              </div>
+            )}
+
+            {/* Tab 2: Carte Interactive Leaflet (Labels 100% en anglais) */}
+            {currentTrip && activeTab === 'map' && (
+              <div className="space-y-4">
+                <LeafletMap
+                  steps={tripSteps}
+                  accommodations={tripAccommodations}
+                  activities={tripActivities}
+                  transports={tripTransports}
+                  tripTitle={currentTrip.title}
+                />
+              </div>
+            )}
+
+            {/* Tab 3: Activités & Planning */}
+            {currentTrip && activeTab === 'activities' && (
+              <ActivitiesView
+                tripId={currentTrip.id}
                 steps={tripSteps}
                 activities={tripActivities}
+                displayCurrency={globalCurrency}
+                onAddActivity={handleAddActivity}
+                onUpdateActivity={handleUpdateActivity}
+                onDeleteActivity={handleDeleteActivity}
+              />
+            )}
+
+            {/* Tab 4: Hébergements & Déplacements */}
+            {currentTrip && activeTab === 'stays_transports' && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-1 p-1 bg-[#111820] rounded-xl border border-[rgba(198,165,106,0.2)] text-xs w-fit">
+                  <button
+                    type="button"
+                    onClick={() => setStaysTransportsSubTab('stays')}
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold transition-colors cursor-pointer ${
+                      staysTransportsSubTab === 'stays'
+                        ? 'bg-gradient-to-r from-[#c6a56a] to-[#d8b97e] text-[#0b0f14] shadow-md'
+                        : 'text-[#98a2a8] hover:text-[#edf0eb]'
+                    }`}
+                  >
+                    <Building2 className="w-3.5 h-3.5" />
+                    <span>Hébergements ({tripAccommodations.length})</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStaysTransportsSubTab('transports')}
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold transition-colors cursor-pointer ${
+                      staysTransportsSubTab === 'transports'
+                        ? 'bg-gradient-to-r from-[#c6a56a] to-[#d8b97e] text-[#0b0f14] shadow-md'
+                        : 'text-[#98a2a8] hover:text-[#edf0eb]'
+                    }`}
+                  >
+                    <Plane className="w-3.5 h-3.5" />
+                    <span>Transports & Déplacements ({tripTransports.length})</span>
+                  </button>
+                </div>
+
+                {staysTransportsSubTab === 'stays' ? (
+                  <AccommodationsView
+                    tripId={currentTrip.id}
+                    steps={tripSteps}
+                    accommodations={tripAccommodations}
+                    displayCurrency={globalCurrency}
+                    onAddAccommodation={handleAddAccommodation}
+                    onUpdateAccommodation={handleUpdateAccommodation}
+                    onDeleteAccommodation={handleDeleteAccommodation}
+                  />
+                ) : (
+                  <TransportsView
+                    tripId={currentTrip.id}
+                    steps={tripSteps}
+                    transports={tripTransports}
+                    displayCurrency={globalCurrency}
+                    onAddTransport={handleAddTransport}
+                    onUpdateTransport={handleUpdateTransport}
+                    onDeleteTransport={handleDeleteTransport}
+                  />
+                )}
+              </div>
+            )}
+
+            {/* Tab 5: Budget & Tricount */}
+            {currentTrip && activeTab === 'budget' && (
+              <BudgetView
+                trip={currentTrip}
+                steps={tripSteps}
                 accommodations={tripAccommodations}
                 transports={tripTransports}
-                onAddActivityForDate={() => setActiveTab('activities')}
-              />
-            )}
-
-            <ItineraryView
-              tripId={currentTrip.id}
-              steps={tripSteps}
-              accommodations={tripAccommodations}
-              activities={tripActivities}
-              transports={tripTransports}
-              expenses={tripExpenses}
-              displayCurrency={globalCurrency}
-              onAddStep={handleAddStep}
-              onUpdateStep={handleUpdateStep}
-              onDeleteStep={handleDeleteStep}
-              onReorderSteps={handleReorderSteps}
-            />
-          </div>
-        )}
-
-        {/* Tab 2: Carte Interactive Leaflet */}
-        {activeTab === 'map' && (
-          <div className="space-y-4">
-            <LeafletMap
-              steps={tripSteps}
-              accommodations={tripAccommodations}
-              activities={tripActivities}
-              transports={tripTransports}
-              tripTitle={currentTrip.title}
-            />
-          </div>
-        )}
-
-        {/* Tab 3: Activités & Planning */}
-        {activeTab === 'activities' && (
-          <ActivitiesView
-            tripId={currentTrip.id}
-            steps={tripSteps}
-            activities={tripActivities}
-            displayCurrency={globalCurrency}
-            onAddActivity={handleAddActivity}
-            onUpdateActivity={handleUpdateActivity}
-            onDeleteActivity={handleDeleteActivity}
-          />
-        )}
-
-        {/* Tab 4: Hébergements & Déplacements */}
-        {activeTab === 'stays_transports' && (
-          <div className="space-y-6">
-            <div className="flex items-center gap-1 p-1 bg-slate-900 rounded-xl border border-slate-800 text-xs w-fit">
-              <button
-                type="button"
-                onClick={() => setStaysTransportsSubTab('stays')}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold transition-colors ${
-                  staysTransportsSubTab === 'stays'
-                    ? 'bg-indigo-600 text-white shadow-md'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <Building2 className="w-3.5 h-3.5" />
-                <span>Hébergements ({tripAccommodations.length})</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setStaysTransportsSubTab('transports')}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold transition-colors ${
-                  staysTransportsSubTab === 'transports'
-                    ? 'bg-rose-600 text-white shadow-md'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <Plane className="w-3.5 h-3.5" />
-                <span>Transports & Déplacements ({tripTransports.length})</span>
-              </button>
-            </div>
-
-            {staysTransportsSubTab === 'stays' ? (
-              <AccommodationsView
-                tripId={currentTrip.id}
-                steps={tripSteps}
-                accommodations={tripAccommodations}
+                expenses={tripExpenses}
                 displayCurrency={globalCurrency}
-                onAddAccommodation={handleAddAccommodation}
-                onUpdateAccommodation={handleUpdateAccommodation}
-                onDeleteAccommodation={handleDeleteAccommodation}
-              />
-            ) : (
-              <TransportsView
-                tripId={currentTrip.id}
-                steps={tripSteps}
-                transports={tripTransports}
-                displayCurrency={globalCurrency}
-                onAddTransport={handleAddTransport}
-                onUpdateTransport={handleUpdateTransport}
-                onDeleteTransport={handleDeleteTransport}
+                onSelectDisplayCurrency={setGlobalCurrency}
+                onAddExpense={handleAddExpense}
+                onUpdateExpense={handleUpdateExpense}
+                onDeleteExpense={handleDeleteExpense}
+                onUpdateTripBudget={handleUpdateTripBudget}
+                onShareBudget={() => {
+                  if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                    navigator.clipboard.writeText(window.location.href).catch(() => {});
+                  }
+                  showToast('Récapitulatif du budget copié dans le presse-papier !');
+                }}
               />
             )}
-          </div>
-        )}
 
-        {/* Tab 5: Budget */}
-        {activeTab === 'budget' && (
-          <BudgetView
-            trip={currentTrip}
-            steps={tripSteps}
-            accommodations={tripAccommodations}
-            transports={tripTransports}
-            expenses={tripExpenses}
-            displayCurrency={globalCurrency}
-            onSelectDisplayCurrency={setGlobalCurrency}
-            onAddExpense={handleAddExpense}
-            onUpdateExpense={handleUpdateExpense}
-            onDeleteExpense={handleDeleteExpense}
-            onUpdateTripBudget={handleUpdateTripBudget}
-            onShareBudget={() => {
-              if (typeof navigator !== 'undefined' && navigator.clipboard) {
-                navigator.clipboard.writeText(window.location.href).catch(() => {});
-              }
-              showToast('✦ Récapitulatif du budget copié dans le presse-papier !');
-            }}
-          />
-        )}
+            {/* Tab 6: Devises */}
+            {activeTab === 'converter' && <CurrencyConverter />}
 
-        {/* Tab 6: Devises */}
-        {activeTab === 'converter' && <CurrencyConverter />}
+            {/* Tab 7: Documents, Billets, Liens & Notes */}
+            {currentTrip && activeTab === 'documents' && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-1 p-1 bg-[#111820] rounded-xl border border-[rgba(198,165,106,0.2)] text-xs w-fit">
+                  <button
+                    type="button"
+                    onClick={() => setDocsSubTab('documents')}
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold transition-colors cursor-pointer ${
+                      docsSubTab === 'documents'
+                        ? 'bg-gradient-to-r from-[#c6a56a] to-[#d8b97e] text-[#0b0f14] shadow-md'
+                        : 'text-[#98a2a8] hover:text-[#edf0eb]'
+                    }`}
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    <span>Billets & QR Codes ({tripDocuments.length})</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDocsSubTab('notes')}
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold transition-colors cursor-pointer ${
+                      docsSubTab === 'notes'
+                        ? 'bg-gradient-to-r from-[#c6a56a] to-[#d8b97e] text-[#0b0f14] shadow-md'
+                        : 'text-[#98a2a8] hover:text-[#edf0eb]'
+                    }`}
+                  >
+                    <Bookmark className="w-3.5 h-3.5" />
+                    <span>Liens Utiles & Checklists ({tripLinks.length + tripNotes.length})</span>
+                  </button>
+                </div>
 
-        {/* Tab 7: Documents, Billets, Liens & Notes */}
-        {activeTab === 'documents' && (
-          <div className="space-y-6">
-            <div className="flex items-center gap-1 p-1 bg-slate-900 rounded-xl border border-slate-800 text-xs w-fit">
-              <button
-                type="button"
-                onClick={() => setDocsSubTab('documents')}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold transition-colors ${
-                  docsSubTab === 'documents'
-                    ? 'bg-cyan-600 text-white shadow-md'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <FileText className="w-3.5 h-3.5" />
-                <span>Billets & QR Codes ({tripDocuments.length})</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setDocsSubTab('notes')}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold transition-colors ${
-                  docsSubTab === 'notes'
-                    ? 'bg-amber-500 text-slate-950 shadow-md'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <Bookmark className="w-3.5 h-3.5" />
-                <span>Liens Utiles & Checklists ({tripLinks.length + tripNotes.length})</span>
-              </button>
-            </div>
-
-            {docsSubTab === 'documents' ? (
-              <DocumentsView
-                tripId={currentTrip.id}
-                steps={tripSteps}
-                documents={tripDocuments}
-                onAddDocument={handleAddDocument}
-                onUpdateDocument={handleUpdateDocument}
-                onDeleteDocument={handleDeleteDocument}
-              />
-            ) : (
-              <LinksNotesView
-                tripId={currentTrip.id}
-                steps={tripSteps}
-                links={tripLinks}
-                notes={tripNotes}
-                onAddLink={handleAddLink}
-                onDeleteLink={handleDeleteLink}
-                onAddNote={handleAddNote}
-                onUpdateNote={handleUpdateNote}
-                onDeleteNote={handleDeleteNote}
-              />
+                {docsSubTab === 'documents' ? (
+                  <DocumentsView
+                    tripId={currentTrip.id}
+                    steps={tripSteps}
+                    documents={tripDocuments}
+                    onAddDocument={handleAddDocument}
+                    onUpdateDocument={handleUpdateDocument}
+                    onDeleteDocument={handleDeleteDocument}
+                  />
+                ) : (
+                  <LinksNotesView
+                    tripId={currentTrip.id}
+                    steps={tripSteps}
+                    links={tripLinks}
+                    notes={tripNotes}
+                    onAddLink={handleAddLink}
+                    onDeleteLink={handleDeleteLink}
+                    onAddNote={handleAddNote}
+                    onUpdateNote={handleUpdateNote}
+                    onDeleteNote={handleDeleteNote}
+                  />
+                )}
+              </div>
             )}
-          </div>
-        )}
-      </main>
+          </main>
 
-      {/* Mobile Touch-First Tab Bar */}
-      <MobileTabBar activeTab={activeTab} onSelectTab={setActiveTab} />
+          {/* Mobile Touch-First Tab Bar */}
+          <MobileTabBar activeTab={activeTab} onSelectTab={setActiveTab} />
+        </div>
+      </div>
 
       {/* Trip Creation / Edition Modal */}
       <TripModal
@@ -797,7 +888,7 @@ export default function App() {
         isOpen={isGalleryModalOpen}
         onClose={() => setIsGalleryModalOpen(false)}
         trips={appData.trips}
-        activeTripId={currentTrip.id}
+        activeTripId={currentTrip?.id}
         onSelectTrip={handleSelectTrip}
         onOpenNewTripModal={() => {
           setEditingTrip(null);
@@ -812,15 +903,7 @@ export default function App() {
         appData={appData}
         onDataRestored={(newData) => {
           setAppData(newData);
-          showToast('Données restaurées avec succès !');
-        }}
-        onUpdateFirebaseConfig={(cfg, enabled) => {
-          setAppData((prev) => ({
-            ...prev,
-            firebaseConfig: cfg,
-            cloudSyncEnabled: enabled,
-          }));
-          showToast('Paramètres de synchronisation mis à jour.');
+          showToast('Données synchronisées avec succès !');
         }}
       />
     </div>

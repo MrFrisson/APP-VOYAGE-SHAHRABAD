@@ -75,54 +75,52 @@ export const TripHeroBanner: React.FC<TripHeroBannerProps> = ({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold uppercase tracking-wider text-[#eadcc0] bg-[rgba(21,29,38,0.85)] backdrop-blur-md px-3.5 py-1.5 rounded-full border border-[rgba(198,165,106,0.35)] flex items-center gap-2 shadow-sm">
-              <span className="text-[#c6a56a]">✦</span>
+              <Compass className="w-3.5 h-3.5 text-[#c6a56a]" />
               <span>{trip.countries.join(' · ')}</span>
             </span>
 
-            {tripsCount > 1 && (
-              <button
-                type="button"
-                onClick={onSelectOtherTrip}
-                className="text-xs text-[#98a2a8] hover:text-[#edf0eb] bg-[rgba(17,24,32,0.8)] hover:bg-[#17212b] backdrop-blur-md px-3.5 py-1.5 rounded-full border border-[rgba(255,255,255,0.09)] transition-colors font-mono"
-              >
-                Changer de voyage ({tripsCount})
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={onSelectOtherTrip}
+              className="text-xs text-[#98a2a8] hover:text-[#edf0eb] bg-[rgba(17,24,32,0.8)] hover:bg-[#17212b] backdrop-blur-md px-3.5 py-1.5 rounded-full border border-[rgba(255,255,255,0.09)] transition-colors font-mono cursor-pointer"
+            >
+              Tous mes voyages ({tripsCount})
+            </button>
           </div>
 
           {/* Action buttons (Share, Edit, Duplicate, Delete) */}
           <div className="flex items-center gap-1.5 bg-[rgba(11,15,20,0.8)] backdrop-blur-md p-1.5 rounded-full border border-[rgba(198,165,106,0.22)]">
-            <button
-              onClick={onShareTrip}
-              title="Partager ce voyage"
-              className="flex items-center gap-1.5 px-3 py-1 text-xs text-[#eadcc0] hover:text-[#c6a56a] hover:bg-[#17212b] rounded-full transition-colors"
-            >
-              <Share2 className="w-3.5 h-3.5 text-[#c6a56a]" />
-              <span className="hidden sm:inline font-medium">Partager</span>
-            </button>
+            {onShareTrip && (
+              <button
+                onClick={onShareTrip}
+                title="Partager ce voyage"
+                className="flex items-center gap-1.5 px-3 py-1 text-xs text-[#eadcc0] hover:text-[#c6a56a] hover:bg-[#17212b] rounded-full transition-colors cursor-pointer"
+              >
+                <Share2 className="w-3.5 h-3.5 text-[#c6a56a]" />
+                <span className="hidden sm:inline font-medium">Partager</span>
+              </button>
+            )}
             <button
               onClick={onEditTrip}
               title="Modifier ce voyage"
-              className="p-2 text-[#98a2a8] hover:text-[#c6a56a] hover:bg-[#17212b] rounded-full transition-colors"
+              className="p-2 text-[#98a2a8] hover:text-[#c6a56a] hover:bg-[#17212b] rounded-full transition-colors cursor-pointer"
             >
               <Edit2 className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={onDuplicateTrip}
               title="Dupliquer ce voyage"
-              className="p-2 text-[#98a2a8] hover:text-[#c6a56a] hover:bg-[#17212b] rounded-full transition-colors"
+              className="p-2 text-[#98a2a8] hover:text-[#c6a56a] hover:bg-[#17212b] rounded-full transition-colors cursor-pointer"
             >
               <Copy className="w-3.5 h-3.5" />
             </button>
-            {tripsCount > 1 && (
-              <button
-                onClick={onDeleteTrip}
-                title="Supprimer ce voyage"
-                className="p-2 text-[#b84f4b] hover:text-[#d4635d] hover:bg-[rgba(184,79,75,0.2)] rounded-full transition-colors"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            )}
+            <button
+              onClick={onDeleteTrip}
+              title="Supprimer ce voyage"
+              className="p-2 text-[#b84f4b] hover:text-[#d4635d] hover:bg-[rgba(184,79,75,0.2)] rounded-full transition-colors cursor-pointer"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
 

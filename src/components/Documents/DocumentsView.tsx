@@ -6,7 +6,7 @@ import {
   Plane,
   Train,
   Building2,
-  Sparkles,
+  Ticket,
   Shield,
   ExternalLink,
   Plus,
@@ -137,7 +137,7 @@ export const DocumentsView: React.FC<DocumentsViewProps> = ({
       case 'hotel':
         return <Building2 className="w-5 h-5 text-indigo-400" />;
       case 'activity':
-        return <Sparkles className="w-5 h-5 text-emerald-400" />;
+        return <Ticket className="w-5 h-5 text-emerald-400" />;
       case 'insurance':
       case 'passport':
         return <Shield className="w-5 h-5 text-cyan-400" />;

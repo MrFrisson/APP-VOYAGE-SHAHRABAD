@@ -1,0 +1,46 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["uid", "updatedAt"]
+    },
+    "UserTravelData": {
+      "title": "UserTravelData",
+      "description": "Synced travel plans and application state for a user",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "trips": { "type": "array" },
+        "steps": { "type": "array" },
+        "accommodations": { "type": "array" },
+        "transports": { "type": "array" },
+        "activities": { "type": "array" },
+        "expenses": { "type": "array" },
+        "documents": { "type": "array" },
+        "links": { "type": "array" },
+        "notes": { "type": "array" },
+        "activeTripId": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["userId", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Stores basic user profile information"
+    },
+    "/users/{userId}/data/app_state": {
+      "schema": "UserTravelData",
+      "description": "Stores user's synced travel trips, itinerary steps, expenses, and notes"
+    }
+  }
+}

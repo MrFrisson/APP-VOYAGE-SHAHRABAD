@@ -38,22 +38,32 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
     if (!mapContainerRef.current) return;
     if (mapInstanceRef.current) return;
 
-    // Default center
+    // Default center (Europe / World)
     const map = L.map(mapContainerRef.current, {
-      center: [30.0, 110.0],
+      center: [45.0, 10.0],
       zoom: 4,
       zoomControl: false,
       attributionControl: false,
     });
 
-    // OpenStreetMap high-speed tile layer (100% free, no API key required)
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap contributors',
-      className: 'shahrabad-map-tiles',
-    }).addTo(map);
+    // Esri World Dark Gray Base with English / Latin labels worldwide (100% free, zero API key)
+    L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+      {
+        maxZoom: 16,
+        attribution: '© Esri, OpenStreetMap',
+      }
+    ).addTo(map);
 
-    // Subtle dark overlay to match the dark luxury gold & charcoal universe
+    // English labels and boundaries overlay
+    L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+      {
+        maxZoom: 16,
+        opacity: 0.9,
+      }
+    ).addTo(map);
+
     const layerGroup = L.layerGroup().addTo(map);
     mapInstanceRef.current = map;
     layerGroupRef.current = layerGroup;
@@ -343,7 +353,7 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
                 : 'text-[#98a2a8] hover:text-[#edf0eb]'
             }`}
           >
-            ✦ Étapes ({steps.length})
+            Étapes ({steps.length})
           </button>
           <button
             onClick={() => setActiveFilter('hotels')}
@@ -449,8 +459,8 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
 
       {/* Map Footer Info */}
       <div className="px-4 py-2.5 bg-[#0b0f14] border-t border-[rgba(198,165,106,0.15)] flex items-center justify-between text-[11px] text-[#98a2a8]">
-        <span>Leaflet Engine · OpenStreetMap cartographie mondiale sans quota</span>
-        <span className="text-[#c6a56a] font-mono">✦ Shahrabad Nocturne</span>
+        <span>Leaflet Engine · Cartographie mondiale en anglais</span>
+        <span className="text-[#c6a56a] font-mono">Shahrabad Dark Edition</span>
       </div>
     </div>
   );

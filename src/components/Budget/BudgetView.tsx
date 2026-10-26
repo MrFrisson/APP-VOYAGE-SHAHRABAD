@@ -25,7 +25,10 @@ import {
   FileText,
   HelpCircle,
   Share2,
+  Users,
 } from 'lucide-react';
+import { TricountSection } from './TricountSection';
+import { ShahrabadDatePicker } from '../Common/ShahrabadDatePicker';
 
 interface BudgetViewProps {
   trip: Trip;
@@ -71,6 +74,7 @@ export const BudgetView: React.FC<BudgetViewProps> = ({
 }) => {
   const [internalCurrency, setInternalCurrency] = useState(trip.currency || 'EUR');
   const displayCurrency = propDisplayCurrency || internalCurrency;
+  const [budgetSubTab, setBudgetSubTab] = useState<'overview' | 'tricount'>('overview');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [isEditingPrevisionalBudget, setIsEditingPrevisionalBudget] = useState(false);
@@ -350,8 +354,45 @@ export const BudgetView: React.FC<BudgetViewProps> = ({
         </div>
       </div>
 
-      {/* KPI Financial Overview Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Sub-tab switcher: Overview vs Tricount */}
+      <div className="flex items-center gap-1.5 p-1 bg-[#111820] rounded-xl border border-[rgba(198,165,106,0.2)] text-xs w-fit">
+        <button
+          type="button"
+          onClick={() => setBudgetSubTab('overview')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition-all cursor-pointer ${
+            budgetSubTab === 'overview'
+              ? 'bg-[#c6a56a] text-[#0b0f14] shadow-md'
+              : 'text-[#98a2a8] hover:text-[#edf0eb]'
+          }`}
+        >
+          <PieChart className="w-3.5 h-3.5" />
+          <span>Vue d'ensemble & Catégories</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setBudgetSubTab('tricount')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition-all cursor-pointer ${
+            budgetSubTab === 'tricount'
+              ? 'bg-[#c6a56a] text-[#0b0f14] shadow-md'
+              : 'text-[#98a2a8] hover:text-[#edf0eb]'
+          }`}
+        >
+          <Users className="w-3.5 h-3.5" />
+          <span>Équilibre Tricount (Partage à plusieurs)</span>
+        </button>
+      </div>
+
+      {budgetSubTab === 'tricount' ? (
+        <TricountSection
+          expenses={expenses}
+          displayCurrency={displayCurrency}
+          onUpdateExpense={onUpdateExpense}
+          onAddExpense={onAddExpense}
+        />
+      ) : (
+        <>
+          {/* KPI Financial Overview Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {/* Forecast Previsional Budget */}
         <div className="bg-slate-900/90 rounded-2xl border border-slate-800 p-4 shadow-lg flex flex-col justify-between">
           <div className="flex items-center justify-between">
@@ -647,6 +688,8 @@ export const BudgetView: React.FC<BudgetViewProps> = ({
           })}
         </div>
       </div>
+        </>
+      )}
 
       {/* Add / Edit Expense Modal */}
       {isModalOpen && (
@@ -750,13 +793,11 @@ export const BudgetView: React.FC<BudgetViewProps> = ({
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Date</label>
-                  <input
-                    type="date"
+                <div className="col-span-1">
+                  <ShahrabadDatePicker
+                    label="Date"
                     value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-xs text-slate-100"
+                    onChange={setDate}
                   />
                 </div>
               </div>

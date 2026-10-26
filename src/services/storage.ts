@@ -9,7 +9,7 @@ export function loadTravelData(): TravelAppData {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (parsed && Array.isArray(parsed.trips) && parsed.trips.length > 0) {
+      if (parsed && Array.isArray(parsed.trips)) {
         return ensureDataIntegrity(parsed);
       }
     }
@@ -71,10 +71,10 @@ export function resetToDemoData(): TravelAppData {
  * Ensures backward compatibility, fallback arrays, and default active trip
  */
 function ensureDataIntegrity(data: Partial<TravelAppData>): TravelAppData {
-  const trips = Array.isArray(data.trips) && data.trips.length > 0 ? data.trips : INITIAL_TRAVEL_DATA.trips;
+  const trips = Array.isArray(data.trips) ? data.trips : INITIAL_TRAVEL_DATA.trips;
   const activeTripId = data.activeTripId && trips.some((t) => t.id === data.activeTripId)
     ? data.activeTripId
-    : trips[0].id;
+    : (trips[0]?.id || '');
 
   return {
     trips,

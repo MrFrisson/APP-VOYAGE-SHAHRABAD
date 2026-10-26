@@ -12,7 +12,7 @@ import {
   Trash2,
   Edit2,
   CheckCircle2,
-  Sparkles,
+  Ticket,
   Bookmark,
   Check,
 } from 'lucide-react';
@@ -213,7 +213,7 @@ export const ActivitiesView: React.FC<ActivitiesViewProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-slate-900/80 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-sm">
         <div>
           <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-emerald-400" />
+            <Ticket className="w-5 h-5 text-[#c6a56a]" />
             <h2 className="text-xl font-serif font-bold text-slate-100">
               Activités & Planning Jour par Jour
             </h2>
@@ -478,7 +478,7 @@ export const ActivitiesView: React.FC<ActivitiesViewProps> = ({
           <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
             <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/80">
               <h3 className="text-base font-serif font-bold text-slate-100 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-emerald-400" />
+                <Ticket className="w-4 h-4 text-[#c6a56a]" />
                 <span>{editingActivity ? 'Modifier l’activité' : 'Ajouter une activité'}</span>
               </h3>
               <button

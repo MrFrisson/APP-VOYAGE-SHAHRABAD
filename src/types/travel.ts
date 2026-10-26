@@ -148,6 +148,8 @@ export interface Expense {
   amountPaid: number;
   linkedType?: 'accommodation' | 'transport' | 'activity';
   linkedId?: string;
+  paidBy?: string;
+  splitBetween?: string[];
 }
 
 export interface DocumentItem {

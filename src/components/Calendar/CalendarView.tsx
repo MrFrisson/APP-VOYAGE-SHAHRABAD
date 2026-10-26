@@ -8,7 +8,7 @@ import {
   MapPin,
   Building2,
   Plane,
-  Sparkles,
+  Ticket,
   Plus,
 } from 'lucide-react';
 
@@ -331,7 +331,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                 >
                   <div className="flex items-center justify-between text-emerald-400 font-semibold mb-1">
                     <span className="flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5" />
+                      <Ticket className="w-3.5 h-3.5" />
                       <span>{act.category}</span>
                     </span>
                     {act.time && (

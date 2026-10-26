@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Trip } from '../../types/travel';
 import { getAutoCoverForDestination } from '../../data/worldDestinations';
-import { Sparkles, Image as ImageIcon } from 'lucide-react';
+import { ShahrabadDatePicker } from '../Common/ShahrabadDatePicker';
+import { Compass, Image as ImageIcon } from 'lucide-react';
 
 interface TripModalProps {
   isOpen: boolean;
@@ -22,7 +23,7 @@ export const TripModal: React.FC<TripModalProps> = ({
     editingTrip?.countries.join(', ') || ''
   );
   const [coverImage, setCoverImage] = useState(
-    editingTrip?.coverImage || '/src/assets/images/travel_china_hero_1792423188699.jpg'
+    editingTrip?.coverImage || getAutoCoverForDestination('')
   );
   const [startDate, setStartDate] = useState(
     editingTrip?.startDate || new Date().toISOString().slice(0, 10)
@@ -34,10 +35,13 @@ export const TripModal: React.FC<TripModalProps> = ({
   const [currency, setCurrency] = useState(editingTrip?.currency || 'EUR');
   const [totalBudget, setTotalBudget] = useState<number>(editingTrip?.totalBudget || 3000);
 
-  // Auto-detect photo according to country / destination
+  // Auto-detect photo according to country / destination in real time
   useEffect(() => {
-    const detected = getAutoCoverForDestination(`${countriesInput} ${title}`);
-    setCoverImage(detected);
+    const searchString = `${countriesInput} ${title}`.trim();
+    if (searchString) {
+      const detected = getAutoCoverForDestination(searchString);
+      setCoverImage(detected);
+    }
   }, [countriesInput, title]);
 
   // Reset when opening
@@ -46,7 +50,7 @@ export const TripModal: React.FC<TripModalProps> = ({
       setTitle(editingTrip.title);
       setDescription(editingTrip.description);
       setCountriesInput(editingTrip.countries.join(', '));
-      setCoverImage(editingTrip.coverImage || '/src/assets/images/travel_china_hero_1792423188699.jpg');
+      setCoverImage(editingTrip.coverImage || getAutoCoverForDestination(editingTrip.title));
       setStartDate(editingTrip.startDate);
       setEndDate(editingTrip.endDate);
       setCurrency(editingTrip.currency);
@@ -55,7 +59,7 @@ export const TripModal: React.FC<TripModalProps> = ({
       setTitle('');
       setDescription('');
       setCountriesInput('');
-      setCoverImage('/src/assets/images/travel_china_hero_1792423188699.jpg');
+      setCoverImage(getAutoCoverForDestination(''));
       setStartDate(new Date().toISOString().slice(0, 10));
       setEndDate(new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
       setCurrency('EUR');
@@ -91,19 +95,17 @@ export const TripModal: React.FC<TripModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
       <div className="bg-[#111820] border border-[rgba(198,165,106,0.3)] w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col">
-        {/* Modal Header */}
+        {/* Modal Header without any star icon */}
         <div className="p-4 border-b border-[rgba(198,165,106,0.2)] flex items-center justify-between bg-[#0b0f14]">
           <div className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full border border-[#c6a56a] flex items-center justify-center text-[#c6a56a] text-xs">
-              ✦
-            </span>
+            <Compass className="w-4 h-4 text-[#c6a56a]" />
             <h3 className="text-base font-serif font-bold text-[#edf0eb]">
-              {editingTrip ? 'Modifier le voyage' : 'Créer un nouveau voyage — Shahrabad'}
+              {editingTrip ? 'Modifier le voyage' : 'Nouveau voyage — Shahrabad'}
             </h3>
           </div>
           <button
             onClick={onClose}
-            className="text-[#98a2a8] hover:text-[#edf0eb] p-1 text-sm transition-colors"
+            className="text-[#98a2a8] hover:text-[#edf0eb] p-1 text-sm transition-colors cursor-pointer"
           >
             ✕
           </button>
@@ -112,7 +114,7 @@ export const TripModal: React.FC<TripModalProps> = ({
         {/* Modal Form */}
         <form onSubmit={handleSubmit} className="p-5 space-y-4 overflow-y-auto flex-1">
           {/* Automatic Photo Banner Preview */}
-          <div className="relative rounded-xl overflow-hidden h-28 border border-[rgba(198,165,106,0.3)] shadow-inner">
+          <div className="relative rounded-xl overflow-hidden h-32 border border-[rgba(198,165,106,0.3)] shadow-inner">
             <img
               src={coverImage}
               alt="Photo automatique"
@@ -121,9 +123,9 @@ export const TripModal: React.FC<TripModalProps> = ({
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0b0f14] via-[#0b0f14]/30 to-transparent" />
             <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between text-xs">
-              <span className="text-[#eadcc0] font-mono text-[11px] flex items-center gap-1.5 bg-[#0b0f14]/80 px-2.5 py-1 rounded-full border border-[rgba(198,165,106,0.3)] backdrop-blur-sm">
-                <Sparkles className="w-3.5 h-3.5 text-[#c6a56a]" />
-                Photo automatiquement adaptée à votre destination
+              <span className="text-[#eadcc0] font-mono text-[11px] flex items-center gap-1.5 bg-[#0b0f14]/85 px-2.5 py-1 rounded-full border border-[rgba(198,165,106,0.3)] backdrop-blur-sm">
+                <ImageIcon className="w-3.5 h-3.5 text-[#c6a56a]" />
+                Photo adaptée automatiquement à votre destination
               </span>
             </div>
           </div>
@@ -138,12 +140,12 @@ export const TripModal: React.FC<TripModalProps> = ({
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Ex: Périple Impérial, Traversée des Alpes, Roadtrip..."
+              placeholder="Ex: Escapade Toscane, Traversée du Japon, Tour du Monde..."
               className="w-full bg-[#0b0f14] border border-[rgba(198,165,106,0.25)] focus:border-[#c6a56a] rounded-xl px-3.5 py-2.5 text-sm text-[#edf0eb] placeholder-[#657079] focus:outline-none"
             />
           </div>
 
-          {/* Destination / Country input without any forced examples */}
+          {/* Destination / Country input */}
           <div>
             <label className="block text-xs font-semibold text-[#edf0eb] mb-1">
               Pays ou destinations *
@@ -153,7 +155,7 @@ export const TripModal: React.FC<TripModalProps> = ({
               required
               value={countriesInput}
               onChange={(e) => setCountriesInput(e.target.value)}
-              placeholder="Entrez vos destinations (séparées par une virgule)..."
+              placeholder="Ex: Italie, Japon, Canada, Islande, Grèce, Maroc, France..."
               className="w-full bg-[#0b0f14] border border-[rgba(198,165,106,0.25)] focus:border-[#c6a56a] rounded-xl px-3.5 py-2 text-sm text-[#edf0eb] placeholder-[#657079] focus:outline-none"
             />
           </div>
@@ -172,30 +174,22 @@ export const TripModal: React.FC<TripModalProps> = ({
             />
           </div>
 
-          {/* Dates */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Custom Date Pickers */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-[#edf0eb] mb-1">
-                Date de départ *
-              </label>
-              <input
-                type="date"
+              <ShahrabadDatePicker
+                label="Date de départ"
                 required
                 value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="w-full bg-[#0b0f14] border border-[rgba(198,165,106,0.25)] rounded-xl px-3 py-2 text-xs text-[#edf0eb] focus:border-[#c6a56a] focus:outline-none"
+                onChange={setStartDate}
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[#edf0eb] mb-1">
-                Date de retour *
-              </label>
-              <input
-                type="date"
+              <ShahrabadDatePicker
+                label="Date de retour"
                 required
                 value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="w-full bg-[#0b0f14] border border-[rgba(198,165,106,0.25)] rounded-xl px-3 py-2 text-xs text-[#edf0eb] focus:border-[#c6a56a] focus:outline-none"
+                onChange={setEndDate}
               />
             </div>
           </div>
@@ -233,22 +227,22 @@ export const TripModal: React.FC<TripModalProps> = ({
               </select>
             </div>
             <div className="col-span-2 text-[10px] text-[#98a2a8]">
-              ✦ Tous les prix et budgets se convertissent automatiquement dans l'onglet Budget selon votre choix de devise.
+              Tous les prix et budgets se convertissent automatiquement dans l'onglet Budget selon votre choix de devise.
             </div>
           </div>
 
           {/* Footer Actions */}
-          <div className="pt-3 border-t border-[rgba(198,165,106,0.2)] flex items-center justify-end gap-3">
+          <div className="pt-2 border-t border-[rgba(198,165,106,0.2)] flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-medium text-[#98a2a8] hover:text-[#edf0eb] transition-colors"
+              className="px-4 py-2 rounded-xl text-xs font-medium text-[#98a2a8] hover:text-[#edf0eb] transition-colors cursor-pointer"
             >
               Annuler
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 rounded-xl bg-[#c6a56a] hover:bg-[#eadcc0] text-[#111820] font-bold text-xs shadow-md transition-all active:scale-95"
+              className="px-5 py-2 rounded-xl bg-gradient-to-r from-[#c6a56a] to-[#d8b97e] hover:brightness-110 text-[#0b0f14] font-bold text-xs shadow-md transition-all cursor-pointer"
             >
               {editingTrip ? 'Enregistrer les modifications' : 'Créer le voyage'}
             </button>

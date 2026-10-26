@@ -20,8 +20,8 @@ import {
   Trash2,
   Edit2,
   Clock,
-  Sparkles,
 } from 'lucide-react';
+import { ShahrabadDatePicker } from '../Common/ShahrabadDatePicker';
 
 interface ItineraryViewProps {
   tripId: string;
@@ -440,7 +440,7 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
                     placeholder="Ex: Rome, Tokyo, New York, Pékin, Guilin, Barcelone..."
                     className="w-full bg-[#0b0f14] border border-[rgba(198,165,106,0.25)] rounded-xl px-3.5 py-2.5 text-sm text-[#edf0eb] placeholder-[#657079] focus:outline-none focus:border-[#c6a56a]"
                   />
-                  <Sparkles className="w-4 h-4 text-[#c6a56a] absolute right-3 top-3 pointer-events-none" />
+                  <MapPin className="w-4 h-4 text-[#c6a56a] absolute right-3 top-3 pointer-events-none" />
                 </div>
 
                 {destinationQuery.trim() !== '' && (
@@ -513,27 +513,19 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
               {/* Arrival & Departure & Nights */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-[#edf0eb] mb-1">
-                    Date d’arrivée *
-                  </label>
-                  <input
-                    type="date"
+                  <ShahrabadDatePicker
+                    label="Date d’arrivée"
                     required
                     value={arrivalDate}
-                    onChange={(e) => handleArrivalDateChange(e.target.value)}
-                    className="w-full bg-[#0b0f14] border border-[rgba(198,165,106,0.25)] rounded-xl px-3 py-2 text-xs text-[#edf0eb] focus:border-[#c6a56a] focus:outline-none"
+                    onChange={handleArrivalDateChange}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-[#edf0eb] mb-1">
-                    Date de départ *
-                  </label>
-                  <input
-                    type="date"
+                  <ShahrabadDatePicker
+                    label="Date de départ"
                     required
                     value={departureDate}
-                    onChange={(e) => handleDepartureDateChange(e.target.value)}
-                    className="w-full bg-[#0b0f14] border border-[rgba(198,165,106,0.25)] rounded-xl px-3 py-2 text-xs text-[#edf0eb] focus:border-[#c6a56a] focus:outline-none"
+                    onChange={handleDepartureDateChange}
                   />
                 </div>
                 <div>
