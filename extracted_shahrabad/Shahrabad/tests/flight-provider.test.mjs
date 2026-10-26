@@ -1,0 +1,30 @@
+import assert from 'node:assert/strict';
+import { getFlightStatus } from '../server/flight-provider.mjs';
+
+let called = false;
+const missing = await getFlightStatus('AF002', '2026-11-18', { key: '', fetcher: () => { called = true; } });
+assert.equal(missing.connected, false);
+assert.equal(called, false);
+const summary = { fr24_id: 'unit-flight', flight: 'AF002', orig_icao: 'LFPG', dest_icao: 'KJFK', first_seen: '2026-11-18T09:00:00Z', last_seen: '2026-11-18T17:00:00Z', datetime_takeoff: '2026-11-18T10:00:00Z', datetime_landed: '2026-11-18T17:00:00Z', flight_ended: true };
+const requests = [];
+const fetcher = async (url, options) => {
+  requests.push({ url: String(url), options });
+  return { ok: true, json: async () => ({ data: [summary] }) };
+};
+const landed = await getFlightStatus('AF002', '2026-11-18', { key: 'unit-test-not-a-credential', fetcher });
+assert.equal(landed.connected, true);
+assert.equal(landed.state, 'landed');
+assert.equal(landed.source, 'Flightradar24');
+assert.equal(landed.updatedAt, new Date(summary.last_seen).toISOString());
+assert.equal(requests.length, 1);
+assert.ok(requests[0].url.includes('/flight-summary/light'));
+assert.equal(requests[0].options.headers['Accept-Version'], 'v1');
+assert.ok(!JSON.stringify(landed).includes('unit-test-not-a-credential'));
+const absent = await getFlightStatus('AF002', '2026-11-18', { key: 'unit-test', fetcher: async () => ({ ok: true, json: async () => ({ data: [] }) }) });
+assert.equal(absent.state, 'not_found');
+assert.match(absent.message, /ni annulation ni retard/);
+const failed = await getFlightStatus('AF002', '2026-11-18', { key: 'unit-test', fetcher: async () => ({ ok: false }) });
+assert.equal(failed.connected, false);
+const ambiguous = await getFlightStatus('AF002', '2026-11-18', { key: 'unit-test', fetcher: async () => ({ ok: true, json: async () => ({ data: [summary, { ...summary, fr24_id: 'other' }] }) }) });
+assert.equal(ambiguous.state, 'unavailable');
+console.log('OK : aucun appel sans clé, schéma réel de vol, UTC/source, aucune fuite de clé, vol absent sans annulation inventée, erreurs et ambiguïtés explicites.');

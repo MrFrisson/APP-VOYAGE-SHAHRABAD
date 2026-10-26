@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0d1117" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta name="description" content="Shahrabad, un planificateur de voyages élégant et universel." />
+  <title>Shahrabad — Planificateur de voyages</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles/date-picker.css" />
+  <link rel="stylesheet" href="styles/tickets.css" />
+  <link rel="stylesheet" href="styles/flights.css" />
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.14.0/dist/maplibre-gl.css" />
+  <script type="importmap">
+    {"imports":{"leaflet":"https://unpkg.com/leaflet@1.9.4/dist/leaflet-src.esm.js","maplibre-gl":"https://unpkg.com/maplibre-gl@6.14.0/dist/maplibre-gl.mjs"}}
+  </script>
+</head>
+<body>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+  <div id="toastRegion" class="toast-region" aria-live="polite"></div>
+
+  <header class="topbar">
+    <a class="brand" href="#" data-action="home" aria-label="Retour à l'accueil">
+      <span class="brand-mark">✦</span>
+      <span><strong>Shahrabad</strong><small>carnet de route</small></span>
+    </a>
+    <div class="topbar-actions">
+      <span id="saveStatus" class="save-status"><i></i> Local</span>
+      <button class="icon-button" data-action="export" title="Exporter les données" aria-label="Exporter les données">↗</button>
+      <button class="icon-button" data-action="import" title="Importer des données" aria-label="Importer des données">↙</button>
+      <input id="importInput" type="file" accept="application/json" hidden />
+    </div>
+  </header>
+
+  <main id="app" class="app-shell"></main>
+
+  <div id="modalRoot"></div>
+
+  <footer class="footer">
+    <span>Shahrabad</span>
+    <span>Un carnet vivant pour les routes à venir.</span>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="src/scheduling.js"></script>
+  <script src="src/date-picker.js"></script>
+  <script src="src/tickets.js"></script>
+  <script src="src/flights.js"></script>
+  <script src="src/flight-actions.js"></script>
+  <script src="src/destinations.js"></script>
+  <script src="src/app.js"></script>
+  <script type="module" src="src/map-layer.js"></script>
+</body>
+</html>

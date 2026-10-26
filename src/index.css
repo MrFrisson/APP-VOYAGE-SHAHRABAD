@@ -1,0 +1,128 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg: #0b0f14;
+    --bg-raised: #111820;
+    --panel: rgba(21, 29, 38, 0.88);
+    --panel-strong: #17212b;
+    --panel-soft: rgba(255, 255, 255, 0.035);
+    --line: rgba(198, 165, 106, 0.22);
+    --line-soft: rgba(255, 255, 255, 0.09);
+    --gold: #c6a56a;
+    --gold-soft: #eadcc0;
+    --red: #b84f4b;
+    --red-bright: #d4635d;
+    --green: #79b59b;
+    --blue: #7ba9c2;
+    --text: #edf0eb;
+    --muted: #98a2a8;
+    --faint: #657079;
+
+    --font-serif: 'Playfair Display', Georgia, serif;
+    --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+  }
+
+  .font-serif {
+    font-family: var(--font-serif);
+  }
+
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+}
+
+/* Ambient subtle background glows */
+.ambient {
+  position: fixed;
+  width: 480px;
+  height: 480px;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  z-index: 0;
+}
+.ambient-one {
+  background: #b84f4b;
+  top: 5%;
+  right: -240px;
+  opacity: 0.12;
+}
+.ambient-two {
+  background: #c6a56a;
+  bottom: -240px;
+  left: -200px;
+  opacity: 0.10;
+}
+
+/* Custom Leaflet Dark Mode Map Styling matching Shahrabad palette */
+.leaflet-container {
+  background: #0b0f14 !important;
+  font-family: 'Inter', sans-serif !important;
+  border-radius: 1rem;
+  z-index: 10;
+}
+
+.leaflet-popup-content-wrapper {
+  background: #111820 !important;
+  color: #edf0eb !important;
+  border: 1px solid rgba(198, 165, 106, 0.35) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 20px 35px -5px rgba(0, 0, 0, 0.85) !important;
+  padding: 0 !important;
+}
+
+.leaflet-popup-content {
+  margin: 14px 16px !important;
+  line-height: 1.45 !important;
+}
+
+.leaflet-popup-tip {
+  background: #111820 !important;
+  border: 1px solid rgba(198, 165, 106, 0.35) !important;
+}
+
+.leaflet-container a.leaflet-popup-close-button {
+  color: #98a2a8 !important;
+  padding: 8px !important;
+}
+
+.leaflet-container a.leaflet-popup-close-button:hover {
+  color: #c6a56a !important;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0b0f14;
+}
+::-webkit-scrollbar-thumb {
+  background: #17212b;
+  border-radius: 9999px;
+  border: 1px solid rgba(198, 165, 106, 0.15);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #243342;
+}
+
+/* Shahrabad dark obsidian map tiles - 100% free OpenStreetMap tiles transformed into midnight aesthetic without any API key */
+.shahrabad-map-tiles {
+  filter: brightness(0.65) invert(1) contrast(2.6) hue-rotate(200deg) saturate(0.25) brightness(0.72) !important;
+  transition: filter 0.3s ease;
+}
+
+.shahrabad-map-tiles-day {
+  filter: saturate(0.85) contrast(1.05) !important;
+  transition: filter 0.3s ease;
+}
+

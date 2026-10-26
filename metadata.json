@@ -1,0 +1,6 @@
+{
+  "name": "Voyageur - Carnet & Planificateur de Voyages Mondial",
+  "description": "Application universelle de planification de voyages, itinéraires multi-destinations, carte interactive Leaflet, hébergements, transports, budget et conversion de devises.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

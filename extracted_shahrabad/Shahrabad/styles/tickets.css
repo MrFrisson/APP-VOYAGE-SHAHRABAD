@@ -1,0 +1,278 @@
+/* ShahrabadTickets — surface sombre, détails dorés, mobile d'abord. */
+.shahrabad-ticket-controls,
+.shahrabad-ticket-viewer {
+  --ticket-line: var(--line, rgba(198,165,106,.19));
+  --ticket-soft: var(--panel-soft, rgba(255,255,255,.035));
+  --ticket-gold: var(--gold, #c6a56a);
+  --ticket-gold-soft: var(--gold-soft, #eadcc0);
+  --ticket-text: var(--text, #edf0eb);
+  --ticket-muted: var(--muted, #98a2a8);
+  color: var(--ticket-text);
+}
+
+.shahrabad-ticket-controls {
+  display: grid;
+  gap: 13px;
+  margin-top: 20px;
+  padding: 17px;
+  border: 1px solid var(--ticket-line);
+  border-radius: var(--radius-md, 14px);
+  background: linear-gradient(135deg, rgba(198,165,106,.08), rgba(255,255,255,.018));
+}
+
+.shahrabad-ticket-controls__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.shahrabad-ticket-kicker {
+  margin: 0 0 4px;
+  color: var(--ticket-gold);
+  font: 10px var(--mono, ui-monospace, monospace);
+  letter-spacing: .15em;
+  text-transform: uppercase;
+}
+
+.shahrabad-ticket-help {
+  max-width: 550px;
+  margin: 0;
+  color: var(--ticket-muted);
+  font-size: 11px;
+}
+
+.shahrabad-ticket-badge {
+  flex: 0 0 auto;
+  padding: 4px 8px;
+  border: 1px solid var(--ticket-line);
+  border-radius: 999px;
+  color: var(--ticket-gold-soft);
+  background: rgba(198,165,106,.08);
+  font: 10px var(--mono, ui-monospace, monospace);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.shahrabad-ticket-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.shahrabad-ticket-button {
+  min-height: 38px;
+  padding: 8px 13px;
+  border: 1px solid var(--ticket-line);
+  border-radius: 999px;
+  color: #1a1711;
+  background: var(--ticket-gold);
+  font-size: 11px;
+  font-weight: 700;
+  transition: .2s ease;
+}
+
+.shahrabad-ticket-button:hover {
+  border-color: var(--ticket-gold-soft);
+  background: var(--ticket-gold-soft);
+  transform: translateY(-1px);
+}
+
+.shahrabad-ticket-button--quiet {
+  color: var(--ticket-gold-soft);
+  background: rgba(198,165,106,.08);
+}
+
+.shahrabad-ticket-button--soon {
+  color: var(--ticket-muted);
+  border-style: dashed;
+  background: rgba(255,255,255,.035);
+}
+
+.shahrabad-ticket-button--soon:hover {
+  color: var(--ticket-gold-soft);
+  background: rgba(198,165,106,.1);
+}
+
+.shahrabad-ticket-status {
+  min-height: 18px;
+  color: var(--ticket-muted);
+  font: 11px var(--mono, ui-monospace, monospace);
+}
+
+.shahrabad-ticket-status[data-ticket-status="ready"] { color: var(--green, #79b59b); }
+.shahrabad-ticket-status[data-ticket-status="reading"] { color: var(--ticket-gold-soft); }
+.shahrabad-ticket-status[data-ticket-status="error"] { color: #efaaa5; }
+.shahrabad-ticket-status[data-ticket-status="soon"] { color: var(--ticket-gold-soft); }
+
+.shahrabad-ticket-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 9px;
+  border: 1px solid var(--ticket-line);
+  border-radius: var(--radius-sm, 10px);
+  background: rgba(0,0,0,.15);
+}
+
+.shahrabad-ticket-preview img {
+  width: 62px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: #0f151b;
+}
+
+.shahrabad-ticket-preview > span {
+  overflow: hidden;
+  color: var(--ticket-muted);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shahrabad-ticket-preview__pdf {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.shahrabad-ticket-preview__pdf > span {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(184,79,75,.45);
+  border-radius: 8px;
+  color: #efaaa5;
+  background: rgba(184,79,75,.13);
+  font: 11px var(--mono, ui-monospace, monospace);
+}
+
+.shahrabad-ticket-preview__pdf strong,
+.shahrabad-ticket-preview__pdf small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shahrabad-ticket-preview__pdf strong { color: var(--ticket-gold-soft); font-size: 12px; }
+.shahrabad-ticket-preview__pdf small { margin-top: 2px; color: var(--ticket-muted); font-size: 10px; }
+
+.shahrabad-ticket-viewer {
+  overflow: hidden;
+  border: 1px solid var(--ticket-line);
+  border-radius: var(--radius-lg, 20px);
+  background: linear-gradient(145deg, rgba(198,165,106,.08), rgba(21,29,38,.9) 30%);
+  box-shadow: 0 18px 50px rgba(0,0,0,.2);
+}
+
+.shahrabad-ticket-viewer__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 23px 17px;
+  border-bottom: 1px solid var(--line-soft, rgba(255,255,255,.09));
+}
+
+.shahrabad-ticket-viewer__head h3 {
+  margin: 0;
+  color: var(--ticket-gold-soft);
+  font: 600 27px var(--display, Georgia, serif);
+}
+
+.shahrabad-ticket-seal {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--ticket-gold);
+  border-radius: 50%;
+  color: var(--ticket-gold);
+  background: rgba(198,165,106,.08);
+}
+
+.shahrabad-ticket-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  border-bottom: 1px solid var(--line-soft, rgba(255,255,255,.09));
+}
+
+.shahrabad-ticket-meta > div {
+  min-width: 0;
+  padding: 14px 16px;
+  border-right: 1px solid var(--line-soft, rgba(255,255,255,.09));
+}
+
+.shahrabad-ticket-meta > div:last-child { border-right: 0; }
+.shahrabad-ticket-meta dt { color: var(--ticket-muted); font: 10px var(--mono, ui-monospace, monospace); letter-spacing: .1em; text-transform: uppercase; }
+.shahrabad-ticket-meta dd { overflow-wrap: anywhere; margin: 5px 0 0; color: var(--ticket-text); font-size: 12px; }
+
+.shahrabad-ticket-media {
+  margin: 18px 22px 0;
+  overflow: hidden;
+  border: 1px solid var(--line-soft, rgba(255,255,255,.09));
+  border-radius: var(--radius-md, 14px);
+  background: #0c1116;
+  text-align: center;
+}
+
+.shahrabad-ticket-media img {
+  display: block;
+  width: 100%;
+  max-height: 370px;
+  object-fit: contain;
+}
+
+.shahrabad-ticket-media--pdf { height: 360px; }
+.shahrabad-ticket-media--pdf object { width: 100%; height: 100%; }
+
+.shahrabad-ticket-link {
+  display: inline-flex;
+  margin: 16px 22px 0;
+  padding: 9px 13px;
+  border: 1px solid var(--ticket-line);
+  border-radius: 999px;
+  color: var(--ticket-gold-soft);
+  background: rgba(198,165,106,.08);
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.shahrabad-ticket-link:hover { border-color: var(--ticket-gold); background: rgba(198,165,106,.15); }
+
+.shahrabad-ticket-empty {
+  margin: 18px 22px 0;
+  padding: 25px 18px;
+  border: 1px dashed var(--ticket-line);
+  border-radius: var(--radius-md, 14px);
+  color: var(--ticket-muted);
+  text-align: center;
+}
+
+.shahrabad-ticket-empty strong { display: block; margin-bottom: 5px; color: var(--ticket-gold-soft); font: 600 21px var(--display, Georgia, serif); }
+.shahrabad-ticket-empty p { margin: 0; font-size: 12px; }
+.shahrabad-ticket-note { margin: 14px 22px 0; color: var(--ticket-muted); font-size: 11px; }
+.shahrabad-ticket-viewer__add { padding: 0 22px 22px; }
+.shahrabad-ticket-viewer__add .shahrabad-ticket-controls { margin-top: 18px; }
+
+@media (max-width: 600px) {
+  .shahrabad-ticket-controls__head { display: block; }
+  .shahrabad-ticket-badge { display: inline-flex; margin-top: 9px; }
+  .shahrabad-ticket-button { flex: 1 1 100%; }
+  .shahrabad-ticket-meta { grid-template-columns: 1fr; }
+  .shahrabad-ticket-meta > div { border-right: 0; border-bottom: 1px solid var(--line-soft, rgba(255,255,255,.09)); }
+  .shahrabad-ticket-meta > div:last-child { border-bottom: 0; }
+  .shahrabad-ticket-viewer__head,
+  .shahrabad-ticket-viewer__add { padding-left: 17px; padding-right: 17px; }
+  .shahrabad-ticket-media,
+  .shahrabad-ticket-empty { margin-left: 17px; margin-right: 17px; }
+  .shahrabad-ticket-note { margin-left: 17px; margin-right: 17px; }
+}
