@@ -14,7 +14,7 @@
     },
     "UserTravelData": {
       "title": "UserTravelData",
-      "description": "Synced travel plans and application state for a user",
+      "description": "Stores user's synced travel trips, itinerary steps, expenses, and notes",
       "type": "object",
       "properties": {
         "userId": { "type": "string" },
@@ -31,6 +31,25 @@
         "updatedAt": { "type": "string" }
       },
       "required": ["userId", "updatedAt"]
+    },
+    "SharedTravelData": {
+      "title": "SharedTravelData",
+      "description": "Shared travel carnets and application state visible across devices for link sharing",
+      "type": "object",
+      "properties": {
+        "trips": { "type": "array" },
+        "steps": { "type": "array" },
+        "accommodations": { "type": "array" },
+        "transports": { "type": "array" },
+        "activities": { "type": "array" },
+        "expenses": { "type": "array" },
+        "documents": { "type": "array" },
+        "links": { "type": "array" },
+        "notes": { "type": "array" },
+        "activeTripId": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["trips", "updatedAt"]
     }
   },
   "firestore": {
@@ -41,6 +60,10 @@
     "/users/{userId}/data/app_state": {
       "schema": "UserTravelData",
       "description": "Stores user's synced travel trips, itinerary steps, expenses, and notes"
+    },
+    "/app_data/{docId}": {
+      "schema": "SharedTravelData",
+      "description": "Stores shared travel trips, itinerary steps, expenses, and notes accessible across devices and links"
     }
   }
 }

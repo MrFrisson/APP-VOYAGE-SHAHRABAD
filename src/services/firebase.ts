@@ -158,3 +158,62 @@ export function subscribeToTravelData(
     }
   );
 }
+
+// 4. Shared Carnets (Global synchronization across all users / colleague links)
+export async function saveSharedTravelData(data: TravelAppData): Promise<void> {
+  const path = 'app_data/global_state';
+  try {
+    const docRef = doc(db, 'app_data', 'global_state');
+    await setDoc(
+      docRef,
+      {
+        trips: data.trips,
+        steps: data.steps,
+        accommodations: data.accommodations,
+        transports: data.transports,
+        activities: data.activities,
+        expenses: data.expenses,
+        documents: data.documents,
+        links: data.links,
+        notes: data.notes,
+        activeTripId: data.activeTripId,
+        updatedAt: new Date().toISOString(),
+      },
+      { merge: true }
+    );
+  } catch (error) {
+    console.error('Failed to save to shared Firestore:', error);
+  }
+}
+
+export async function loadSharedTravelData(): Promise<Partial<TravelAppData> | null> {
+  const path = 'app_data/global_state';
+  try {
+    const docRef = doc(db, 'app_data', 'global_state');
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      return snap.data() as Partial<TravelAppData>;
+    }
+    return null;
+  } catch (error) {
+    console.error('Failed to load shared travel data from Firestore:', error);
+    return null;
+  }
+}
+
+export function subscribeToSharedTravelData(
+  onData: (data: Partial<TravelAppData>) => void
+): Unsubscribe {
+  const docRef = doc(db, 'app_data', 'global_state');
+  return onSnapshot(
+    docRef,
+    (snapshot) => {
+      if (snapshot.exists()) {
+        onData(snapshot.data() as Partial<TravelAppData>);
+      }
+    },
+    (error) => {
+      console.error('Firestore real-time shared subscription error:', error);
+    }
+  );
+}

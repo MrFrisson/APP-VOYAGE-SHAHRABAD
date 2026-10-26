@@ -17,6 +17,11 @@ import {
   GeneralNote,
 } from './types/travel';
 import { loadTravelData, saveTravelData } from './services/storage';
+import {
+  saveSharedTravelData,
+  loadSharedTravelData,
+  subscribeToSharedTravelData,
+} from './services/firebase';
 import { Header, ActiveTab } from './components/Navigation/Header';
 import { MobileTabBar } from './components/Navigation/MobileTabBar';
 import { TripHeroBanner } from './components/Trips/TripHeroBanner';
@@ -75,9 +80,56 @@ export default function App() {
     }, 3500);
   };
 
-  // Keep localStorage synced whenever appData changes
+  // 1. Initial Cloud Sync and Realtime Listener (colleague link & multi-device sync)
+  useEffect(() => {
+    let active = true;
+
+    // Load shared data from Firestore
+    loadSharedTravelData()
+      .then((cloudData) => {
+        if (!active) return;
+        if (cloudData && Array.isArray(cloudData.trips) && cloudData.trips.length > 0) {
+          // Cloud has real trips! Replace state so anyone opening the link sees real trips
+          setAppData((prev) => {
+            const merged = { ...prev, ...cloudData } as TravelAppData;
+            saveTravelData(merged);
+            return merged;
+          });
+        } else {
+          // If Firestore is still empty, populate Firestore with our local trips
+          const local = loadTravelData();
+          if (local && Array.isArray(local.trips) && local.trips.length > 0) {
+            saveSharedTravelData(local);
+          }
+        }
+      })
+      .catch((err) => {
+        console.error('Error fetching shared Firestore data:', err);
+      });
+
+    // Realtime listener for shared data
+    const unsubscribe = subscribeToSharedTravelData((cloudData) => {
+      if (!active || !cloudData || !Array.isArray(cloudData.trips)) return;
+      setAppData((current) => {
+        if (cloudData.updatedAt && current.updatedAt && cloudData.updatedAt <= current.updatedAt) {
+          return current;
+        }
+        const merged = { ...current, ...cloudData } as TravelAppData;
+        saveTravelData(merged);
+        return merged;
+      });
+    });
+
+    return () => {
+      active = false;
+      unsubscribe();
+    };
+  }, []);
+
+  // 2. Keep localStorage AND Firebase Cloud automatically synced whenever appData changes
   useEffect(() => {
     saveTravelData(appData);
+    saveSharedTravelData(appData);
   }, [appData]);
 
   // Current active trip (can be null if 0 trips exist)

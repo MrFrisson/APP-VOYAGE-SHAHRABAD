@@ -89,5 +89,6 @@ function ensureDataIntegrity(data: Partial<TravelAppData>): TravelAppData {
     notes: Array.isArray(data.notes) ? data.notes : INITIAL_TRAVEL_DATA.notes,
     firebaseConfig: data.firebaseConfig,
     cloudSyncEnabled: !!data.cloudSyncEnabled,
+    updatedAt: data.updatedAt,
   };
 }

@@ -202,4 +202,5 @@ export interface TravelAppData {
     storageBucket?: string;
   };
   cloudSyncEnabled?: boolean;
+  updatedAt?: string;
 }
