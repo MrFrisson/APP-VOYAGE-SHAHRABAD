@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Database, ChevronDown, Share2, Compass, Smartphone, Monitor } from 'lucide-react';
+import { Plus, Cloud, ChevronDown, Share2, Compass, Smartphone, Monitor } from 'lucide-react';
 import { Trip } from '../../types/travel';
 
 export type ActiveTab =
@@ -226,10 +226,11 @@ export const Header: React.FC<HeaderProps> = ({
 
         <button
           onClick={onOpenSyncModal}
-          title="Sauvegarde Cloud & Données locales"
-          className="w-8 h-8 rounded-full bg-[#111820] hover:bg-[#17212b] text-[#c6a56a] border border-[rgba(198,165,106,0.25)] flex items-center justify-center transition-colors cursor-pointer"
+          title="Enregistrer en 1 clic / Exporter en ZIP"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#111820] hover:bg-[#17212b] text-[#eadcc0] hover:text-[#c6a56a] border border-[rgba(198,165,106,0.3)] text-xs font-semibold transition-all cursor-pointer shadow-sm"
         >
-          <Database className="w-3.5 h-3.5" />
+          <Cloud className="w-3.5 h-3.5 text-[#c6a56a]" />
+          <span className="hidden sm:inline font-medium">Enregistrer / ZIP</span>
         </button>
 
         <button

@@ -160,8 +160,16 @@ export function subscribeToTravelData(
 }
 
 // 4. Shared Carnets (Global synchronization across all users / colleague links)
-export async function saveSharedTravelData(data: TravelAppData): Promise<void> {
-  const path = 'app_data/global_state';
+let isCloudQuotaExhausted = false;
+
+export function isFirestoreQuotaExhausted(): boolean {
+  return isCloudQuotaExhausted;
+}
+
+export async function saveSharedTravelData(data: TravelAppData): Promise<boolean> {
+  if (isCloudQuotaExhausted) {
+    return false;
+  }
   try {
     const docRef = doc(db, 'app_data', 'global_state');
     await setDoc(
@@ -181,13 +189,23 @@ export async function saveSharedTravelData(data: TravelAppData): Promise<void> {
       },
       { merge: true }
     );
-  } catch (error) {
+    return true;
+  } catch (error: any) {
+    if (
+      error?.code === 'resource-exhausted' ||
+      (typeof error?.message === 'string' && error.message.includes('Quota limit exceeded'))
+    ) {
+      isCloudQuotaExhausted = true;
+      console.warn('Firestore write quota reached for today. Using local storage seamlessly.');
+      return false;
+    }
     console.error('Failed to save to shared Firestore:', error);
+    return false;
   }
 }
 
 export async function loadSharedTravelData(): Promise<Partial<TravelAppData> | null> {
-  const path = 'app_data/global_state';
+  if (isCloudQuotaExhausted) return null;
   try {
     const docRef = doc(db, 'app_data', 'global_state');
     const snap = await getDoc(docRef);
@@ -195,7 +213,15 @@ export async function loadSharedTravelData(): Promise<Partial<TravelAppData> | n
       return snap.data() as Partial<TravelAppData>;
     }
     return null;
-  } catch (error) {
+  } catch (error: any) {
+    if (
+      error?.code === 'resource-exhausted' ||
+      (typeof error?.message === 'string' && error.message.includes('Quota limit exceeded'))
+    ) {
+      isCloudQuotaExhausted = true;
+      console.warn('Firestore read quota reached. Using local data.');
+      return null;
+    }
     console.error('Failed to load shared travel data from Firestore:', error);
     return null;
   }
@@ -204,16 +230,31 @@ export async function loadSharedTravelData(): Promise<Partial<TravelAppData> | n
 export function subscribeToSharedTravelData(
   onData: (data: Partial<TravelAppData>) => void
 ): Unsubscribe {
+  if (isCloudQuotaExhausted) {
+    return () => {};
+  }
   const docRef = doc(db, 'app_data', 'global_state');
-  return onSnapshot(
-    docRef,
-    (snapshot) => {
-      if (snapshot.exists()) {
-        onData(snapshot.data() as Partial<TravelAppData>);
+  try {
+    return onSnapshot(
+      docRef,
+      (snapshot) => {
+        if (snapshot.exists()) {
+          onData(snapshot.data() as Partial<TravelAppData>);
+        }
+      },
+      (error) => {
+        if (
+          error?.code === 'resource-exhausted' ||
+          (typeof error?.message === 'string' && error.message.includes('Quota limit exceeded'))
+        ) {
+          isCloudQuotaExhausted = true;
+          console.warn('Firestore quota reached. Real-time listener paused to prevent backoff delay.');
+          return;
+        }
+        console.error('Firestore real-time shared subscription error:', error);
       }
-    },
-    (error) => {
-      console.error('Firestore real-time shared subscription error:', error);
-    }
-  );
+    );
+  } catch {
+    return () => {};
+  }
 }

@@ -80,23 +80,26 @@ export default function App() {
     }, 3500);
   };
 
+  const isRemoteUpdateRef = React.useRef(false);
+  const debounceTimerRef = React.useRef<any>(null);
+
   // 1. Initial Cloud Sync and Realtime Listener (colleague link & multi-device sync)
   useEffect(() => {
     let active = true;
 
-    // Load shared data from Firestore
+    // Load shared data from Firestore on startup
     loadSharedTravelData()
       .then((cloudData) => {
         if (!active) return;
         if (cloudData && Array.isArray(cloudData.trips) && cloudData.trips.length > 0) {
-          // Cloud has real trips! Replace state so anyone opening the link sees real trips
+          isRemoteUpdateRef.current = true;
           setAppData((prev) => {
             const merged = { ...prev, ...cloudData } as TravelAppData;
             saveTravelData(merged);
             return merged;
           });
         } else {
-          // If Firestore is still empty, populate Firestore with our local trips
+          // If Firestore is still empty, populate Firestore with our current local trips
           const local = loadTravelData();
           if (local && Array.isArray(local.trips) && local.trips.length > 0) {
             saveSharedTravelData(local);
@@ -104,12 +107,13 @@ export default function App() {
         }
       })
       .catch((err) => {
-        console.error('Error fetching shared Firestore data:', err);
+        console.warn('Initial cloud fetch:', err);
       });
 
-    // Realtime listener for shared data
+    // Realtime listener for shared data (with remote update flag to prevent loop)
     const unsubscribe = subscribeToSharedTravelData((cloudData) => {
       if (!active || !cloudData || !Array.isArray(cloudData.trips)) return;
+      isRemoteUpdateRef.current = true;
       setAppData((current) => {
         if (cloudData.updatedAt && current.updatedAt && cloudData.updatedAt <= current.updatedAt) {
           return current;
@@ -126,10 +130,31 @@ export default function App() {
     };
   }, []);
 
-  // 2. Keep localStorage AND Firebase Cloud automatically synced whenever appData changes
+  // 2. Keep localStorage synced immediately, and debounce Firebase Cloud writes to respect quota
   useEffect(() => {
+    // Always persist to local browser storage immediately
     saveTravelData(appData);
-    saveSharedTravelData(appData);
+
+    // If this update arrived from the cloud listener, do not echo it back as a write!
+    if (isRemoteUpdateRef.current) {
+      isRemoteUpdateRef.current = false;
+      return;
+    }
+
+    // Debounce cloud write by 3 seconds to avoid spamming writes on rapid typing
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    debounceTimerRef.current = setTimeout(() => {
+      saveSharedTravelData(appData);
+    }, 3000);
+
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
   }, [appData]);
 
   // Current active trip (can be null if 0 trips exist)

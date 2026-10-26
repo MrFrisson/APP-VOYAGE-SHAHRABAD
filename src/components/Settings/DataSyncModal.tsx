@@ -1,341 +1,238 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
+import JSZip from 'jszip';
 import { TravelAppData } from '../../types/travel';
-import { exportDataAsJson, importDataFromJson, resetToDemoData } from '../../services/storage';
-import {
-  auth,
-  loginWithGoogle,
-  logoutUser,
-  saveTravelDataToCloud,
-  loadTravelDataFromCloud,
-} from '../../services/firebase';
-import { User } from 'firebase/auth';
+import { saveTravelData } from '../../services/storage';
+import { saveSharedTravelData } from '../../services/firebase';
 import {
   Cloud,
   Download,
-  Upload,
-  RotateCcw,
   CheckCircle2,
-  HardDrive,
-  LogIn,
-  LogOut,
+  Save,
+  FileArchive,
   RefreshCw,
-  Shield,
+  X,
+  Sparkles as _, // unused placeholder
 } from 'lucide-react';
-import firebaseConfig from '../../../firebase-applet-config.json';
 
 interface DataSyncModalProps {
   isOpen: boolean;
   onClose: () => void;
   appData: TravelAppData;
-  onDataRestored: (newData: TravelAppData) => void;
+  onDataRestored?: (newData: TravelAppData) => void;
 }
 
 export const DataSyncModal: React.FC<DataSyncModalProps> = ({
   isOpen,
   onClose,
   appData,
-  onDataRestored,
 }) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [currentUser, setCurrentUser] = useState<User | null>(auth.currentUser);
-  const [isSyncing, setIsSyncing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isZipping, setIsZipping] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
-  const [statusType, setStatusType] = useState<'success' | 'error' | 'info'>('info');
-
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      setCurrentUser(user);
-    });
-    return () => unsubscribe();
-  }, []);
+  const [lastSavedTime, setLastSavedTime] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
-  const handleGoogleLogin = async () => {
+  // 1-Click Save to Firebase Cloud & LocalStorage
+  const handleOneClickSave = async () => {
+    setIsSaving(true);
+    setStatusMessage(null);
     try {
-      setIsSyncing(true);
-      setStatusMessage('Connexion Google en cours...');
-      setStatusType('info');
-      const user = await loginWithGoogle();
-      setCurrentUser(user);
-      setStatusMessage(`Connecté avec succès en tant que ${user.displayName || user.email} !`);
-      setStatusType('success');
+      const now = new Date();
+      const updatedData: TravelAppData = {
+        ...appData,
+        updatedAt: now.toISOString(),
+      };
+      // Save locally
+      saveTravelData(updatedData);
+      // Save to Firebase Cloud
+      const cloudSuccess = await saveSharedTravelData(updatedData);
 
-      // Auto-load cloud data if available, or upload local data
-      const cloudData = await loadTravelDataFromCloud(user);
-      if (cloudData && Array.isArray(cloudData.trips) && cloudData.trips.length > 0) {
-        onDataRestored({
-          ...appData,
-          ...cloudData,
-        } as TravelAppData);
-        setStatusMessage('Données récupérées depuis Firebase Firestore !');
+      const timeStr = now.toLocaleTimeString('fr-FR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      });
+      setLastSavedTime(timeStr);
+
+      if (cloudSuccess) {
+        setStatusMessage(`Enregistré avec succès dans le Cloud Firebase à ${timeStr} !`);
       } else {
-        await saveTravelDataToCloud(appData, user);
-        setStatusMessage('Vos voyages locaux ont été synchronisés sur Firebase !');
+        setStatusMessage(`Enregistré localement à ${timeStr}. (Note : Le quota gratuit journalier de Firebase est temporairement atteint et se réinitialise demain à minuit)`);
       }
     } catch (err: any) {
-      console.error('Erreur Firebase Auth:', err);
-      setStatusMessage(`Erreur de connexion : ${err.message || 'Impossible de se connecter'}`);
-      setStatusType('error');
+      console.error('Erreur sauvegarde:', err);
+      setStatusMessage('Erreur lors de la sauvegarde : ' + (err.message || 'Problème réseau'));
     } finally {
-      setIsSyncing(false);
+      setIsSaving(false);
     }
   };
 
-  const handleLogout = async () => {
+  // Export as ZIP file
+  const handleExportZip = async () => {
+    setIsZipping(true);
     try {
-      await logoutUser();
-      setCurrentUser(null);
-      setStatusMessage('Déconnecté de Firebase.');
-      setStatusType('info');
-    } catch (err: any) {
-      setStatusMessage(`Erreur de déconnexion : ${err.message}`);
-      setStatusType('error');
-    }
-  };
+      const zip = new JSZip();
 
-  const handlePushToCloud = async () => {
-    if (!currentUser) return;
-    try {
-      setIsSyncing(true);
-      await saveTravelDataToCloud(appData, currentUser);
-      setStatusMessage('Toutes vos données sont enregistrées en temps réel sur Firebase !');
-      setStatusType('success');
+      // 1. Data JSON
+      const jsonContent = JSON.stringify(appData, null, 2);
+      zip.file('donnees-voyages.json', jsonContent);
+
+      // 2. Markdown travel summary
+      let mdContent = `# Shahrabad — Carnet de Route\n\n`;
+      mdContent += `Exporté le : ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}\n\n`;
+      mdContent += `Total voyages : ${appData.trips.length}\n\n`;
+
+      appData.trips.forEach((trip, index) => {
+        mdContent += `## Voyage ${index + 1} : ${trip.title}\n`;
+        mdContent += `- Pays : ${trip.countries?.join(', ') || 'N/A'}\n`;
+        mdContent += `- Dates : du ${trip.startDate || '?'} au ${trip.endDate || '?'}\n`;
+        mdContent += `- Budget prévisionnel : ${trip.totalBudget} ${trip.currency}\n`;
+        if (trip.description) mdContent += `- Description : ${trip.description}\n`;
+        mdContent += `\n### Étapes de ce voyage :\n`;
+
+        const steps = appData.steps.filter((s) => s.tripId === trip.id);
+        if (steps.length === 0) {
+          mdContent += `_Aucune étape enregistrée._\n`;
+        } else {
+          steps.forEach((s) => {
+            mdContent += `1. **${s.destination}** (${s.nights} nuits) — Arrivée le ${s.arrivalDate || '?'}\n`;
+            if (s.transportToNext) mdContent += `   - Transport : ${s.transportToNext}\n`;
+            if (s.notes) mdContent += `   - Notes : ${s.notes}\n`;
+          });
+        }
+        mdContent += `\n---\n\n`;
+      });
+
+      zip.file('carnet-de-route.md', mdContent);
+
+      // 3. README info
+      const readme = `SHAHRABAD — EXPORT DE VOYAGE
+=====================================
+Ce dossier ZIP contient :
+- donnees-voyages.json : L'intégralité des données brutes (étapes, hébergements, transports, dépenses, tricount).
+- carnet-de-route.md : Un récapitulatif clair et lisible de tous vos périples.
+
+Toutes vos données restent synchronisées en ligne sur votre Cloud Firebase.
+`;
+      zip.file('README.txt', readme);
+
+      // Generate blob
+      const content = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(content);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `shahrabad-export-${new Date().toISOString().slice(0, 10)}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      setStatusMessage('Archive ZIP téléchargée avec succès !');
     } catch (err: any) {
-      setStatusMessage(`Erreur de synchronisation : ${err.message}`);
-      setStatusType('error');
+      console.error('Erreur export ZIP:', err);
+      setStatusMessage('Erreur lors de la création du ZIP.');
     } finally {
-      setIsSyncing(false);
-    }
-  };
-
-  const handlePullFromCloud = async () => {
-    if (!currentUser) return;
-    try {
-      setIsSyncing(true);
-      const cloudData = await loadTravelDataFromCloud(currentUser);
-      if (cloudData && Array.isArray(cloudData.trips)) {
-        onDataRestored({
-          ...appData,
-          ...cloudData,
-        } as TravelAppData);
-        setStatusMessage('Données rechargées avec succès depuis Firebase Firestore !');
-        setStatusType('success');
-      } else {
-        setStatusMessage('Aucune sauvegarde antérieure trouvée sur le Cloud. Sauvegarde locale active.');
-        setStatusType('info');
-      }
-    } catch (err: any) {
-      setStatusMessage(`Erreur lors du chargement : ${err.message}`);
-      setStatusType('error');
-    } finally {
-      setIsSyncing(false);
-    }
-  };
-
-  const handleExport = () => {
-    exportDataAsJson(appData);
-    setStatusMessage('Export JSON téléchargé avec succès !');
-    setStatusType('success');
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const text = event.target?.result as string;
-        const restored = importDataFromJson(text);
-        onDataRestored(restored);
-        setStatusMessage('Sauvegarde JSON importée avec succès !');
-        setStatusType('success');
-      } catch (err: any) {
-        setStatusMessage(`Erreur d’importation : ${err.message || 'Fichier invalide'}`);
-        setStatusType('error');
-      }
-    };
-    reader.readAsText(file);
-  };
-
-  const handleReset = () => {
-    if (
-      window.confirm(
-        'Voulez-vous réinitialiser toutes les données aux voyages de démonstration complets (Chine et Italie) ?'
-      )
-    ) {
-      const resetData = resetToDemoData();
-      onDataRestored(resetData);
-      setStatusMessage('Données réinitialisées avec succès aux voyages de démonstration !');
-      setStatusType('info');
+      setIsZipping(false);
     }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-[#111820] border border-[rgba(198,165,106,0.3)] w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+      <div className="bg-[#111820] border border-[rgba(198,165,106,0.3)] w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col">
         {/* Header */}
         <div className="p-4 border-b border-[rgba(198,165,106,0.2)] flex items-center justify-between bg-[#0b0f14]">
           <h3 className="text-base font-serif font-bold text-[#edf0eb] flex items-center gap-2">
             <Cloud className="w-4 h-4 text-[#c6a56a]" />
-            <span>Synchronisation Cloud Firebase & Données</span>
+            <span>Enregistrement & Export</span>
           </h3>
           <button
             onClick={onClose}
             className="text-[#98a2a8] hover:text-[#edf0eb] p-1 text-sm cursor-pointer"
           >
-            ✕
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="p-5 space-y-6 overflow-y-auto flex-1">
+        {/* Body : ONLY the two requested actions */}
+        <div className="p-5 space-y-4">
           {/* Status Message */}
           {statusMessage && (
-            <div
-              className={`p-3 rounded-xl text-xs flex items-center gap-2 ${
-                statusType === 'success'
-                  ? 'bg-emerald-950/40 border border-emerald-500/40 text-emerald-300'
-                  : statusType === 'error'
-                  ? 'bg-rose-950/40 border border-rose-500/40 text-rose-300'
-                  : 'bg-[rgba(198,165,106,0.1)] border border-[rgba(198,165,106,0.3)] text-[#eadcc0]'
-              }`}
-            >
-              <CheckCircle2 className="w-4 h-4 shrink-0" />
+            <div className="p-3 rounded-xl text-xs flex items-center gap-2 bg-emerald-950/40 border border-emerald-500/40 text-emerald-300">
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
               <span>{statusMessage}</span>
             </div>
           )}
 
-          {/* Cloud Sync Section */}
-          <div className="p-4 rounded-xl bg-[#0b0f14] border border-[rgba(198,165,106,0.25)] space-y-4">
+          {/* Option 1: Un clic pour enregistrer */}
+          <div className="p-4 rounded-xl bg-[#0b0f14] border border-[rgba(198,165,106,0.25)] space-y-3">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+              <div className="flex items-center gap-2">
+                <Save className="w-4 h-4 text-[#c6a56a]" />
                 <h4 className="text-sm font-serif font-bold text-[#edf0eb]">
-                  Cloud Firestore & Authentification
+                  Enregistrer dans le Cloud
                 </h4>
               </div>
-              <span className="text-[10px] font-mono text-[#c6a56a] px-2 py-0.5 rounded-full bg-[rgba(198,165,106,0.1)] border border-[rgba(198,165,106,0.2)]">
-                Base active
+              <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                1 Clic
               </span>
             </div>
 
             <p className="text-xs text-[#98a2a8] leading-relaxed">
-              Votre projet Firebase <code className="text-[#c6a56a] font-mono">{firebaseConfig.projectId}</code> est connecté et opérationnel. Connectez-vous avec votre compte Google pour synchroniser instantanément vos carnets de route sur tous vos appareils.
+              Enregistre instantanément tous vos voyages sur Firebase. Toute personne qui ouvre votre lien voit vos modifications immédiatement.
             </p>
-
-            {currentUser ? (
-              <div className="space-y-3 pt-1">
-                <div className="flex items-center justify-between p-2.5 rounded-lg bg-[#151d26] border border-[rgba(198,165,106,0.15)] text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">👤</span>
-                    <div>
-                      <p className="font-semibold text-[#edf0eb]">{currentUser.displayName || 'Utilisateur'}</p>
-                      <p className="text-[11px] text-[#98a2a8]">{currentUser.email}</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs text-[#b84f4b] hover:bg-[#b84f4b]/20 transition-colors cursor-pointer"
-                  >
-                    <LogOut className="w-3.5 h-3.5" />
-                    <span>Déconnexion</span>
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 pt-1">
-                  <button
-                    onClick={handlePushToCloud}
-                    disabled={isSyncing}
-                    className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-[#c6a56a] to-[#d8b97e] text-[#0b0f14] font-bold text-xs hover:brightness-110 disabled:opacity-50 transition-all cursor-pointer shadow-md"
-                  >
-                    <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-                    <span>Sauvegarder vers le Cloud</span>
-                  </button>
-
-                  <button
-                    onClick={handlePullFromCloud}
-                    disabled={isSyncing}
-                    className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-[#151d26] hover:bg-[#1a232e] text-[#edf0eb] border border-[rgba(198,165,106,0.25)] text-xs font-semibold disabled:opacity-50 transition-all cursor-pointer"
-                  >
-                    <Download className="w-3.5 h-3.5 text-[#c6a56a]" />
-                    <span>Recharger du Cloud</span>
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <button
-                onClick={handleGoogleLogin}
-                disabled={isSyncing}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#c6a56a] to-[#d8b97e] text-[#0b0f14] font-bold text-xs hover:brightness-110 disabled:opacity-50 transition-all cursor-pointer shadow-md"
-              >
-                <LogIn className="w-4 h-4" />
-                <span>Se connecter avec Google pour synchroniser</span>
-              </button>
-            )}
-
-            <div className="flex items-center gap-2 text-[11px] text-[#657079] pt-1">
-              <Shield className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-              <span>Règles de sécurité Firestore activées : vos voyages restent strictement privés.</span>
-            </div>
-          </div>
-
-          {/* Local Storage & Export/Import Section */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <HardDrive className="w-4 h-4 text-[#c6a56a]" />
-              <h4 className="text-sm font-serif font-bold text-[#edf0eb]">
-                Sauvegarde Locale & Portabilité JSON
-              </h4>
-            </div>
-            <p className="text-xs text-[#98a2a8] leading-relaxed">
-              Toutes vos données restent également enregistrées en temps réel dans votre navigateur local. Vous pouvez à tout moment exporter un fichier de sauvegarde ou l’importer.
-            </p>
-
-            <div className="grid grid-cols-2 gap-3 pt-1">
-              <button
-                type="button"
-                onClick={handleExport}
-                className="flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-[#0b0f14] hover:bg-[#151d26] border border-[rgba(198,165,106,0.25)] text-xs font-semibold text-[#edf0eb] transition-colors cursor-pointer"
-              >
-                <Download className="w-4 h-4 text-[#c6a56a]" />
-                <span>Exporter JSON</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-[#0b0f14] hover:bg-[#151d26] border border-[rgba(198,165,106,0.25)] text-xs font-semibold text-[#edf0eb] transition-colors cursor-pointer"
-              >
-                <Upload className="w-4 h-4 text-[#79b59b]" />
-                <span>Importer JSON</span>
-              </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".json"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-            </div>
 
             <button
-              type="button"
-              onClick={handleReset}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-[#0b0f14]/60 hover:bg-[#b84f4b]/20 border border-[rgba(198,165,106,0.15)] text-[11px] text-[#98a2a8] hover:text-[#b84f4b] transition-colors cursor-pointer"
+              onClick={handleOneClickSave}
+              disabled={isSaving}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-[#c6a56a] to-[#d8b97e] text-[#0b0f14] font-bold text-xs hover:brightness-110 active:scale-98 transition-all cursor-pointer shadow-lg shadow-[rgba(198,165,106,0.2)] disabled:opacity-50"
             >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Réinitialiser aux voyages de démonstration</span>
+              <RefreshCw className={`w-4 h-4 ${isSaving ? 'animate-spin' : ''}`} />
+              <span>{isSaving ? 'Enregistrement en cours...' : 'Enregistrer maintenant (1 Clic)'}</span>
+            </button>
+
+            {lastSavedTime && (
+              <p className="text-[11px] text-center text-[#98a2a8] font-mono">
+                Dernière sauvegarde : {lastSavedTime}
+              </p>
+            )}
+          </div>
+
+          {/* Option 2: Exporter en ZIP */}
+          <div className="p-4 rounded-xl bg-[#0b0f14] border border-[rgba(198,165,106,0.25)] space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileArchive className="w-4 h-4 text-[#c6a56a]" />
+                <h4 className="text-sm font-serif font-bold text-[#edf0eb]">
+                  Exporter en Archive ZIP
+                </h4>
+              </div>
+              <span className="text-[10px] font-mono text-[#c6a56a] bg-[rgba(198,165,106,0.1)] px-2 py-0.5 rounded-full border border-[rgba(198,165,106,0.25)]">
+                .ZIP
+              </span>
+            </div>
+
+            <p className="text-xs text-[#98a2a8] leading-relaxed">
+              Télécharge une archive ZIP contenant vos données complètes (`donnees-voyages.json`) et le carnet de route imprimable (`carnet-de-route.md`).
+            </p>
+
+            <button
+              onClick={handleExportZip}
+              disabled={isZipping}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#151d26] hover:bg-[#1a232e] text-[#edf0eb] border border-[rgba(198,165,106,0.3)] text-xs font-semibold hover:border-[#c6a56a] transition-all cursor-pointer shadow-md disabled:opacity-50"
+            >
+              <Download className={`w-4 h-4 text-[#c6a56a] ${isZipping ? 'animate-bounce' : ''}`} />
+              <span>{isZipping ? 'Création du ZIP...' : 'Télécharger l’archive ZIP'}</span>
             </button>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-[rgba(198,165,106,0.2)] bg-[#0b0f14] flex items-center justify-end">
+        <div className="p-3 border-t border-[rgba(198,165,106,0.2)] bg-[#0b0f14] flex items-center justify-end">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-[#151d26] hover:bg-[#1a232e] text-xs font-semibold text-[#edf0eb] cursor-pointer"
+            className="px-4 py-1.5 rounded-xl bg-[#151d26] hover:bg-[#1a232e] text-xs font-semibold text-[#edf0eb] cursor-pointer"
           >
             Fermer
           </button>
