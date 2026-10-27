@@ -181,7 +181,12 @@ export const TripModal: React.FC<TripModalProps> = ({
                 label="Date de départ"
                 required
                 value={startDate}
-                onChange={setStartDate}
+                onChange={(val) => {
+                  setStartDate(val);
+                  if (endDate && val && endDate < val) {
+                    setEndDate(val);
+                  }
+                }}
               />
             </div>
             <div>
@@ -189,7 +194,10 @@ export const TripModal: React.FC<TripModalProps> = ({
                 label="Date de retour"
                 required
                 value={endDate}
+                min={startDate}
+                defaultMonthDate={startDate}
                 onChange={setEndDate}
+                align="right"
               />
             </div>
           </div>

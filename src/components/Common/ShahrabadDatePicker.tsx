@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 interface ShahrabadDatePickerProps {
@@ -7,6 +7,8 @@ interface ShahrabadDatePickerProps {
   label?: string;
   min?: string;
   max?: string;
+  defaultMonthDate?: string; // Target date (e.g. departure date) to adapt view month when value is empty
+  align?: 'left' | 'right' | 'auto';
   className?: string;
   placeholder?: string;
   required?: boolean;
@@ -25,30 +27,131 @@ export const ShahrabadDatePicker: React.FC<ShahrabadDatePickerProps> = ({
   label,
   min,
   max,
+  defaultMonthDate,
+  align = 'auto',
   className = '',
   placeholder = 'Choisir une date',
   required,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [popoverStyle, setPopoverStyle] = useState<React.CSSProperties>({ left: 0, width: 280 });
 
-  // Parse current date
-  const parsedDate = value ? new Date(value + 'T00:00:00') : null;
-  const initialYear = parsedDate && !isNaN(parsedDate.getTime()) ? parsedDate.getFullYear() : new Date().getFullYear();
-  const initialMonth = parsedDate && !isNaN(parsedDate.getTime()) ? parsedDate.getMonth() : new Date().getMonth();
+  // Helper to parse date
+  const getYearMonth = (dateStr?: string) => {
+    if (dateStr) {
+      const d = new Date(dateStr + 'T00:00:00');
+      if (!isNaN(d.getTime())) {
+        return { year: d.getFullYear(), month: d.getMonth() };
+      }
+    }
+    return null;
+  };
 
-  const [viewYear, setViewYear] = useState(initialYear);
-  const [viewMonth, setViewMonth] = useState(initialMonth);
+  // Determine initial view date based on value, then defaultMonthDate, then min, then today
+  const initial =
+    getYearMonth(value) ||
+    getYearMonth(defaultMonthDate) ||
+    getYearMonth(min) || {
+      year: new Date().getFullYear(),
+      month: new Date().getMonth(),
+    };
 
+  const [viewYear, setViewYear] = useState(initial.year);
+  const [viewMonth, setViewMonth] = useState(initial.month);
+
+  // When value changes externally
   useEffect(() => {
     if (value) {
-      const d = new Date(value + 'T00:00:00');
-      if (!isNaN(d.getTime())) {
-        setViewYear(d.getFullYear());
-        setViewMonth(d.getMonth());
+      const target = getYearMonth(value);
+      if (target) {
+        setViewYear(target.year);
+        setViewMonth(target.month);
       }
     }
   }, [value]);
+
+  // When min or defaultMonthDate adapts (e.g. user selected departure date = 5 November)
+  useEffect(() => {
+    if (min) {
+      // If current value is before min, auto-adjust to min
+      if (value && value < min) {
+        onChange(min);
+      }
+      // If no value is selected yet, adapt view directly to min/departure month
+      if (!value) {
+        const target = getYearMonth(defaultMonthDate) || getYearMonth(min);
+        if (target) {
+          setViewYear(target.year);
+          setViewMonth(target.month);
+        }
+      }
+    }
+  }, [min, defaultMonthDate]);
+
+  // Dynamically calculate position to prevent being cut off on left or right
+  const updatePopoverPosition = () => {
+    if (!containerRef.current) return;
+    const triggerRect = containerRef.current.getBoundingClientRect();
+
+    // Look for parent dialog, form, or viewport
+    const modalParent = containerRef.current.closest('form, [role="dialog"], .max-w-xl, .max-w-lg, .max-w-md, main');
+    const bounds = modalParent
+      ? modalParent.getBoundingClientRect()
+      : { left: 12, right: window.innerWidth - 12 };
+
+    const popoverWidth = Math.min(285, window.innerWidth - 24);
+
+    // Desired horizontal position:
+    // If align is 'right' or trigger is in the right half of the container:
+    const isRightAligned =
+      align === 'right' ||
+      (align === 'auto' && triggerRect.left > bounds.left + (bounds.right - bounds.left) * 0.45);
+
+    let desiredScreenLeft = isRightAligned
+      ? triggerRect.right - popoverWidth
+      : triggerRect.left;
+
+    // Strict clamping within visible bounds:
+    // It can NEVER be cut off on the left (>= bounds.left + 8) or on the right (<= bounds.right - popoverWidth - 8)
+    const minAllowedLeft = bounds.left + 8;
+    const maxAllowedLeft = bounds.right - popoverWidth - 8;
+
+    const clampedScreenLeft = Math.max(minAllowedLeft, Math.min(desiredScreenLeft, maxAllowedLeft));
+    const relativeLeft = clampedScreenLeft - triggerRect.left;
+
+    setPopoverStyle({
+      left: `${relativeLeft}px`,
+      width: `${popoverWidth}px`,
+    });
+  };
+
+  // When opening: adapt month to departure date if empty, and calculate non-clipping position
+  useLayoutEffect(() => {
+    if (isOpen) {
+      // If no value is chosen yet, open directly on min/departure month!
+      if (!value) {
+        const target = getYearMonth(defaultMonthDate) || getYearMonth(min);
+        if (target) {
+          setViewYear(target.year);
+          setViewMonth(target.month);
+        }
+      }
+      updatePopoverPosition();
+    }
+  }, [isOpen]);
+
+  // Handle window resize or scroll
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleReposition = () => updatePopoverPosition();
+    window.addEventListener('resize', handleReposition);
+    window.addEventListener('scroll', handleReposition, true);
+    return () => {
+      window.removeEventListener('resize', handleReposition);
+      window.removeEventListener('scroll', handleReposition, true);
+    };
+  }, [isOpen]);
 
   // Click outside to close
   useEffect(() => {
@@ -128,6 +231,14 @@ export const ShahrabadDatePicker: React.FC<ShahrabadDatePickerProps> = ({
     );
   };
 
+  const baseYear = new Date().getFullYear();
+  const yearOptions = Array.from(
+    new Set([
+      ...Array.from({ length: 10 }, (_, i) => baseYear - 1 + i),
+      viewYear,
+    ])
+  ).sort((a, b) => a - b);
+
   return (
     <div className={`relative ${className}`} ref={containerRef}>
       {label && (
@@ -136,20 +247,20 @@ export const ShahrabadDatePicker: React.FC<ShahrabadDatePickerProps> = ({
         </label>
       )}
 
-      {/* Custom Trigger Input */}
+      {/* Trigger Button */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full flex items-center justify-between gap-2.5 px-3.5 py-2.5 rounded-xl border text-xs transition-all text-left cursor-pointer ${
+        className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl border text-xs transition-all text-left cursor-pointer ${
           isOpen
-            ? 'border-[#c6a56a] bg-[rgba(198,165,106,0.1)] text-[#eadcc0] shadow-[0_0_12px_rgba(198,165,106,0.2)]'
+            ? 'border-[#c6a56a] bg-[rgba(198,165,106,0.12)] text-[#eadcc0] shadow-[0_0_12px_rgba(198,165,106,0.2)]'
             : value
             ? 'border-[rgba(198,165,106,0.25)] bg-[#0b0f14] text-[#edf0eb] hover:border-[#c6a56a]'
             : 'border-[rgba(198,165,106,0.2)] bg-[#0b0f14] text-[#657079] hover:border-[rgba(198,165,106,0.4)]'
         }`}
       >
         <div className="flex items-center gap-2 truncate">
-          <CalendarIcon className="w-4 h-4 text-[#c6a56a] shrink-0" />
+          <CalendarIcon className="w-3.5 h-3.5 text-[#c6a56a] shrink-0" />
           <span className="truncate">{value ? formatDisplay(value) : placeholder}</span>
         </div>
         <span className="text-[10px] text-[#98a2a8] font-mono shrink-0">
@@ -157,11 +268,14 @@ export const ShahrabadDatePicker: React.FC<ShahrabadDatePickerProps> = ({
         </span>
       </button>
 
-      {/* Popover Calendar Modal */}
+      {/* Popover Calendar with Anti-Clipping Positioning */}
       {isOpen && (
-        <div className="absolute z-50 left-0 mt-1.5 w-72 sm:w-80 p-3.5 rounded-2xl bg-[#111820] border border-[rgba(198,165,106,0.35)] shadow-2xl backdrop-blur-md animate-fadeIn">
-          {/* Calendar Header with Month/Year Navigation */}
-          <div className="flex items-center justify-between gap-1 mb-3 pb-2 border-b border-[rgba(198,165,106,0.15)]">
+        <div
+          style={popoverStyle}
+          className="absolute z-50 mt-1.5 p-3 rounded-2xl bg-[#111820] border border-[rgba(198,165,106,0.35)] shadow-2xl backdrop-blur-md animate-fadeIn"
+        >
+          {/* Header with Month/Year Navigation */}
+          <div className="flex items-center justify-between gap-1 mb-2.5 pb-2 border-b border-[rgba(198,165,106,0.15)]">
             <button
               type="button"
               onClick={handlePrevMonth}
@@ -174,7 +288,7 @@ export const ShahrabadDatePicker: React.FC<ShahrabadDatePickerProps> = ({
               <select
                 value={viewMonth}
                 onChange={(e) => setViewMonth(Number(e.target.value))}
-                className="bg-[#0b0f14] border border-[rgba(198,165,106,0.2)] text-[#eadcc0] text-xs rounded-lg px-2 py-1 focus:outline-none"
+                className="bg-[#0b0f14] border border-[rgba(198,165,106,0.2)] text-[#eadcc0] text-xs rounded-lg px-2 py-1 focus:outline-none cursor-pointer"
               >
                 {MONTHS_FR.map((m, idx) => (
                   <option key={m} value={idx}>
@@ -186,15 +300,13 @@ export const ShahrabadDatePicker: React.FC<ShahrabadDatePickerProps> = ({
               <select
                 value={viewYear}
                 onChange={(e) => setViewYear(Number(e.target.value))}
-                className="bg-[#0b0f14] border border-[rgba(198,165,106,0.2)] text-[#eadcc0] text-xs rounded-lg px-2 py-1 focus:outline-none"
+                className="bg-[#0b0f14] border border-[rgba(198,165,106,0.2)] text-[#eadcc0] text-xs rounded-lg px-1.5 py-1 focus:outline-none cursor-pointer"
               >
-                {Array.from({ length: 15 }, (_, i) => new Date().getFullYear() - 2 + i).map(
-                  (y) => (
-                    <option key={y} value={y}>
-                      {y}
-                    </option>
-                  )
-                )}
+                {yearOptions.map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -208,7 +320,7 @@ export const ShahrabadDatePicker: React.FC<ShahrabadDatePickerProps> = ({
           </div>
 
           {/* Weekday Labels */}
-          <div className="grid grid-cols-7 gap-1 text-center mb-1.5 text-[11px] font-semibold text-[#98a2a8]">
+          <div className="grid grid-cols-7 gap-1 text-center mb-1 text-[10px] font-semibold text-[#98a2a8]">
             {WEEKDAYS_FR.map((wd) => (
               <div key={wd} className="py-0.5">
                 {wd}
@@ -220,7 +332,7 @@ export const ShahrabadDatePicker: React.FC<ShahrabadDatePickerProps> = ({
           <div className="grid grid-cols-7 gap-1">
             {/* Blank leading days */}
             {Array.from({ length: startDay }).map((_, i) => (
-              <div key={`blank-${i}`} className="h-8" />
+              <div key={`blank-${i}`} className="h-7 w-7" />
             ))}
 
             {/* Month days */}
@@ -236,7 +348,7 @@ export const ShahrabadDatePicker: React.FC<ShahrabadDatePickerProps> = ({
                   type="button"
                   disabled={disabled}
                   onClick={() => handleSelectDay(day)}
-                  className={`h-8 rounded-lg text-xs font-medium flex items-center justify-center transition-all cursor-pointer ${
+                  className={`h-7 w-7 rounded-lg text-xs font-medium flex items-center justify-center transition-all cursor-pointer ${
                     disabled
                       ? 'opacity-20 cursor-not-allowed text-[#657079]'
                       : selected
@@ -253,18 +365,32 @@ export const ShahrabadDatePicker: React.FC<ShahrabadDatePickerProps> = ({
           </div>
 
           {/* Quick Clear / Today buttons */}
-          <div className="mt-3 pt-2 border-t border-[rgba(198,165,106,0.15)] flex items-center justify-between text-[11px]">
-            <button
-              type="button"
-              onClick={() => {
-                const todayIso = new Date().toISOString().slice(0, 10);
-                onChange(todayIso);
-                setIsOpen(false);
-              }}
-              className="text-[#c6a56a] hover:underline cursor-pointer"
-            >
-              Aujourd'hui
-            </button>
+          <div className="mt-2.5 pt-2 border-t border-[rgba(198,165,106,0.15)] flex items-center justify-between text-[11px]">
+            {(!min || new Date().toISOString().slice(0, 10) >= min) ? (
+              <button
+                type="button"
+                onClick={() => {
+                  const todayIso = new Date().toISOString().slice(0, 10);
+                  onChange(todayIso);
+                  setIsOpen(false);
+                }}
+                className="text-[#c6a56a] hover:underline cursor-pointer"
+              >
+                Aujourd'hui
+              </button>
+            ) : min ? (
+              <button
+                type="button"
+                onClick={() => {
+                  onChange(min);
+                  setIsOpen(false);
+                }}
+                className="text-[#c6a56a] hover:underline cursor-pointer"
+              >
+                Date min ({formatDisplay(min)})
+              </button>
+            ) : null}
+
             {value && (
               <button
                 type="button"
@@ -272,7 +398,7 @@ export const ShahrabadDatePicker: React.FC<ShahrabadDatePickerProps> = ({
                   onChange('');
                   setIsOpen(false);
                 }}
-                className="text-[#b84f4b] hover:underline flex items-center gap-1 cursor-pointer"
+                className="text-[#b84f4b] hover:underline flex items-center gap-1 cursor-pointer ml-auto"
               >
                 <X className="w-3 h-3" />
                 <span>Effacer</span>

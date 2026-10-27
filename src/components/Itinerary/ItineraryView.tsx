@@ -525,7 +525,10 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
                     label="Date de départ"
                     required
                     value={departureDate}
+                    min={arrivalDate}
+                    defaultMonthDate={arrivalDate}
                     onChange={handleDepartureDateChange}
+                    align="right"
                   />
                 </div>
                 <div>
