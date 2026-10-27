@@ -14,16 +14,16 @@ export const WORLD_CITIES: WorldCity[] = [
   { city: 'Paris', country: 'France', region: 'Europe', lat: 48.8566, lng: 2.3522, currency: 'EUR', emoji: '🗼', popularHighlights: ['Tour Eiffel', 'Musée du Louvre', 'Montmartre', 'Notre-Dame'] },
   { city: 'Rome', country: 'Italie', region: 'Europe', lat: 41.9028, lng: 12.4964, currency: 'EUR', emoji: '🏛️', popularHighlights: ['Colisée', 'Fontaine de Trevi', 'Vatican', 'Panthéon'] },
   { city: 'Florence', country: 'Italie', region: 'Europe', lat: 43.7696, lng: 11.2558, currency: 'EUR', emoji: '🎨', popularHighlights: ['Duomo Santa Maria', 'Galerie des Offices', 'Ponte Vecchio'] },
-  { city: 'Venise', country: 'Italie', region: 'Europe', lat: 45.4408, lng: 12.3155, currency: 'EUR', emoji: '🎭', popularHighlights: ['Place Saint-Marc', 'Pont des Soupirs', 'Grand Canal'] },
-  { city: 'Barcelone', country: 'Espagne', region: 'Europe', lat: 41.3851, lng: 2.1734, currency: 'EUR', emoji: '🏖️', popularHighlights: ['Sagrada Família', 'Parc Güell', 'Las Ramblas'] },
+  { city: 'Venise', country: 'Italie', region: 'Europe', lat: 45.4408, lng: 12.3155, currency: 'EUR', emoji: '🛶', popularHighlights: ['Place Saint-Marc', 'Pont des Soupirs', 'Grand Canal'] },
+  { city: 'Barcelone', country: 'Espagne', region: 'Europe', lat: 41.3851, lng: 2.1734, currency: 'EUR', emoji: '🦎', popularHighlights: ['Sagrada Família', 'Parc Güell', 'Las Ramblas'] },
   { city: 'Madrid', country: 'Espagne', region: 'Europe', lat: 40.4168, lng: -3.7038, currency: 'EUR', emoji: '🥘', popularHighlights: ['Musée du Prado', 'Palais Royal', 'Retiro'] },
   { city: 'Séville', country: 'Espagne', region: 'Europe', lat: 37.3891, lng: -5.9845, currency: 'EUR', emoji: '💃', popularHighlights: ['Place d’Espagne', 'Alcazar', 'Giralda'] },
-  { city: 'Londres', country: 'Royaume-Uni', region: 'Europe', lat: 51.5074, lng: -0.1278, currency: 'GBP', emoji: '🎡', popularHighlights: ['Big Ben', 'Tower Bridge', 'British Museum'] },
+  { city: 'Londres', country: 'Royaume-Uni', region: 'Europe', lat: 51.5074, lng: -0.1278, currency: 'GBP', emoji: '🕰️', popularHighlights: ['Big Ben', 'Tower Bridge', 'British Museum'] },
   { city: 'Édimbourg', country: 'Royaume-Uni', region: 'Europe', lat: 55.9533, lng: -3.1883, currency: 'GBP', emoji: '🏰', popularHighlights: ['Château d’Édimbourg', 'Royal Mile'] },
   { city: 'Dublin', country: 'Irlande', region: 'Europe', lat: 53.3498, lng: -6.2603, currency: 'EUR', emoji: '🍀', popularHighlights: ['Temple Bar', 'Trinity College'] },
   { city: 'Amsterdam', country: 'Pays-Bas', region: 'Europe', lat: 52.3676, lng: 4.9041, currency: 'EUR', emoji: '🚲', popularHighlights: ['Canaux d’Amsterdam', 'Musée Van Gogh'] },
   { city: 'Bruxelles', country: 'Belgique', region: 'Europe', lat: 50.8503, lng: 4.3517, currency: 'EUR', emoji: '🍫', popularHighlights: ['Grand-Place', 'Atomium'] },
-  { city: 'Berlin', country: 'Allemagne', region: 'Europe', lat: 52.5200, lng: 13.4050, currency: 'EUR', emoji: '🍺', popularHighlights: ['Porte de Brandebourg', 'Mur de Berlin'] },
+  { city: 'Berlin', country: 'Allemagne', region: 'Europe', lat: 52.5200, lng: 13.4050, currency: 'EUR', emoji: '🐻', popularHighlights: ['Porte de Brandebourg', 'Mur de Berlin'] },
   { city: 'Munich', country: 'Allemagne', region: 'Europe', lat: 48.1351, lng: 11.5820, currency: 'EUR', emoji: '🥨', popularHighlights: ['Marienplatz', 'Jardin Anglais'] },
   { city: 'Vienne', country: 'Autriche', region: 'Europe', lat: 48.2082, lng: 16.3738, currency: 'EUR', emoji: '🎻', popularHighlights: ['Palais de Schönbrunn', 'Opéra'] },
   { city: 'Prague', country: 'République Tchèque', region: 'Europe', lat: 50.0755, lng: 14.4378, currency: 'CZK', emoji: '🏰', popularHighlights: ['Pont Charles', 'Château de Prague'] },
@@ -33,7 +33,7 @@ export const WORLD_CITIES: WorldCity[] = [
   { city: 'Mykonos', country: 'Grèce', region: 'Europe', lat: 37.4467, lng: 25.3289, currency: 'EUR', emoji: '⛵', popularHighlights: ['Moulins à vent', 'Petite Venise'] },
   { city: 'Lisbonne', country: 'Portugal', region: 'Europe', lat: 38.7223, lng: -9.1393, currency: 'EUR', emoji: '🚋', popularHighlights: ['Tram 28', 'Tour de Belém', 'Alfama'] },
   { city: 'Porto', country: 'Portugal', region: 'Europe', lat: 41.1579, lng: -8.6291, currency: 'EUR', emoji: '🍷', popularHighlights: ['Ribeira', 'Pont Dom-Luís'] },
-  { city: 'Reykjavik', country: 'Islande', region: 'Europe', lat: 64.1466, lng: -21.9426, currency: 'ISK', emoji: '🧊', popularHighlights: ['Cercle d’Or', 'Blue Lagoon', 'Aurores Boréales'] },
+  { city: 'Reykjavik', country: 'Islande', region: 'Europe', lat: 64.1466, lng: -21.9426, currency: 'ISK', emoji: '🌋', popularHighlights: ['Cercle d’Or', 'Blue Lagoon', 'Aurores Boréales'] },
   { city: 'Zurich', country: 'Suisse', region: 'Europe', lat: 47.3769, lng: 8.5417, currency: 'CHF', emoji: '🏔️', popularHighlights: ['Lac de Zurich', 'Grossmünster'] },
   { city: 'Genève', country: 'Suisse', region: 'Europe', lat: 46.2044, lng: 6.1432, currency: 'CHF', emoji: '⛲', popularHighlights: ['Jet d’Eau', 'Lac Léman'] },
   { city: 'Stockholm', country: 'Suède', region: 'Europe', lat: 59.3293, lng: 18.0686, currency: 'SEK', emoji: '⛵', popularHighlights: ['Gamla Stan', 'Musée Vasa'] },
@@ -43,22 +43,22 @@ export const WORLD_CITIES: WorldCity[] = [
   { city: 'Istanbul', country: 'Turquie', region: 'Europe', lat: 41.0082, lng: 28.9784, currency: 'TRY', emoji: '🕌', popularHighlights: ['Sainte-Sophie', 'Mosquée Bleue', 'Grand Bazar'] },
 
   // Asie
-  { city: 'Tokyo', country: 'Japon', region: 'Asie', lat: 35.6762, lng: 139.6503, currency: 'JPY', emoji: '⛩️', popularHighlights: ['Shibuya Crossing', 'Sensō-ji', 'Mont Fuji'] },
-  { city: 'Kyoto', country: 'Japon', region: 'Asie', lat: 35.0116, lng: 135.7681, currency: 'JPY', emoji: '🌸', popularHighlights: ['Fushimi Inari', 'Kinkaku-ji', 'Forêt de bambous'] },
-  { city: 'Osaka', country: 'Japon', region: 'Asie', lat: 34.6937, lng: 135.5023, currency: 'JPY', emoji: '🍣', popularHighlights: ['Dotonbori', 'Château d’Osaka'] },
-  { city: 'Pékin (Beijing)', country: 'Chine', region: 'Asie', lat: 39.9042, lng: 116.4074, currency: 'CNY', emoji: '🏮', popularHighlights: ['Cité Interdite', 'Grande Muraille', 'Palais d’Été'] },
-  { city: 'Xi’an', country: 'Chine', region: 'Asie', lat: 34.3416, lng: 108.9398, currency: 'CNY', emoji: '🏺', popularHighlights: ['Guerriers de terre cuite', 'Remparts'] },
+  { city: 'Tokyo', country: 'Japon', region: 'Asie', lat: 35.6762, lng: 139.6503, currency: 'JPY', emoji: '🗼', popularHighlights: ['Shibuya Crossing', 'Sensō-ji', 'Mont Fuji'] },
+  { city: 'Kyoto', country: 'Japon', region: 'Asie', lat: 35.0116, lng: 135.7681, currency: 'JPY', emoji: '⛩️', popularHighlights: ['Fushimi Inari', 'Kinkaku-ji', 'Forêt de bambous'] },
+  { city: 'Osaka', country: 'Japon', region: 'Asie', lat: 34.6937, lng: 135.5023, currency: 'JPY', emoji: '🐙', popularHighlights: ['Dotonbori', 'Château d’Osaka'] },
+  { city: 'Pékin', country: 'Chine', region: 'Asie', lat: 39.9042, lng: 116.4074, currency: 'CNY', emoji: '🐉', popularHighlights: ['Cité Interdite', 'Grande Muraille', 'Palais d’Été'] },
+  { city: 'Xi’an', country: 'Chine', region: 'Asie', lat: 34.3416, lng: 108.9398, currency: 'CNY', emoji: '🗿', popularHighlights: ['Guerriers de terre cuite', 'Remparts'] },
   { city: 'Guilin / Yangshuo', country: 'Chine', region: 'Asie', lat: 25.2736, lng: 110.2902, currency: 'CNY', emoji: '⛰️', popularHighlights: ['Rivière Li', 'Pics karstiques'] },
   { city: 'Shanghai', country: 'Chine', region: 'Asie', lat: 31.2304, lng: 121.4737, currency: 'CNY', emoji: '🏙️', popularHighlights: ['The Bund', 'Tour de Shanghai'] },
   { city: 'Chengdu', country: 'Chine', region: 'Asie', lat: 30.5728, lng: 104.0668, currency: 'CNY', emoji: '🐼', popularHighlights: ['Base des Pandas', 'Mont Qingcheng'] },
   { city: 'Hong Kong', country: 'Chine', region: 'Asie', lat: 22.3193, lng: 114.1694, currency: 'HKD', emoji: '🚡', popularHighlights: ['Victoria Peak', 'Star Ferry'] },
-  { city: 'Bangkok', country: 'Thaïlande', region: 'Asie', lat: 13.7563, lng: 100.5018, currency: 'THB', emoji: '🛕', popularHighlights: ['Grand Palais', 'Wat Pho'] },
+  { city: 'Bangkok', country: 'Thaïlande', region: 'Asie', lat: 13.7563, lng: 100.5018, currency: 'THB', emoji: '🛺', popularHighlights: ['Grand Palais', 'Wat Pho'] },
   { city: 'Chiang Mai', country: 'Thaïlande', region: 'Asie', lat: 18.7883, lng: 98.9853, currency: 'THB', emoji: '🐘', popularHighlights: ['Sanctuaires', 'Doi Suthep'] },
   { city: 'Phuket', country: 'Thaïlande', region: 'Asie', lat: 7.8804, lng: 98.3923, currency: 'THB', emoji: '🏝️', popularHighlights: ['Baie de Phang Nga', 'Plages'] },
   { city: 'Séoul', country: 'Corée du Sud', region: 'Asie', lat: 37.5665, lng: 126.9780, currency: 'KRW', emoji: '🥢', popularHighlights: ['Palais Gyeongbokgung', 'Myeongdong'] },
   { city: 'Singapour', country: 'Singapour', region: 'Asie', lat: 1.3521, lng: 103.8198, currency: 'SGD', emoji: '🦁', popularHighlights: ['Gardens by the Bay', 'Marina Bay Sands'] },
   { city: 'Bali', country: 'Indonésie', region: 'Asie', lat: -8.4095, lng: 115.1889, currency: 'IDR', emoji: '🌺', popularHighlights: ['Ubud', 'Temples de Tanah Lot'] },
-  { city: 'Kuala Lumpur', country: 'Malaisie', region: 'Asie', lat: 3.1390, lng: 101.6869, currency: 'MYR', emoji: '🕌', popularHighlights: ['Tours Petronas', 'Grottes de Batu'] },
+  { city: 'Kuala Lumpur', country: 'Malaisie', region: 'Asie', lat: 3.1390, lng: 101.6869, currency: 'MYR', emoji: '🏙️', popularHighlights: ['Tours Petronas', 'Grottes de Batu'] },
   { city: 'Hanoï', country: 'Vietnam', region: 'Asie', lat: 21.0285, lng: 105.8542, currency: 'VND', emoji: '🍜', popularHighlights: ['Vieux Quartier', 'Baie d’Halong'] },
   { city: 'Hô-Chi-Minh-Ville', country: 'Vietnam', region: 'Asie', lat: 10.8231, lng: 106.6297, currency: 'VND', emoji: '🛵', popularHighlights: ['Marché Ben Thanh', 'Mékong'] },
   { city: 'Siem Reap', country: 'Cambodge', region: 'Asie', lat: 13.3671, lng: 103.8448, currency: 'USD', emoji: '🗿', popularHighlights: ['Angkor Wat', 'Bayon'] },
@@ -73,7 +73,10 @@ export const WORLD_CITIES: WorldCity[] = [
   { city: 'Montréal', country: 'Canada', region: 'Amérique du Nord', lat: 45.5017, lng: -73.5673, currency: 'CAD', emoji: '🍁', popularHighlights: ['Vieux-Montréal', 'Mont Royal'] },
   { city: 'Vancouver', country: 'Canada', region: 'Amérique du Nord', lat: 49.2827, lng: -123.1207, currency: 'CAD', emoji: '🌲', popularHighlights: ['Stanley Park', 'Capilano'] },
   { city: 'Mexico', country: 'Mexique', region: 'Amérique Latine', lat: 19.4326, lng: -99.1332, currency: 'MXN', emoji: '🌮', popularHighlights: ['Zócalo', 'Teotihuacan', 'Frida Kahlo'] },
+  { city: 'Villahermosa', country: 'Mexique', region: 'Tabasco', lat: 17.9885, lng: -92.9366, currency: 'MXN', emoji: '🐊', popularHighlights: ['Parque-Museo La Venta', 'Laguna de las Ilusiones', 'Cacao & Olmecas'] },
   { city: 'Cancún / Tulum', country: 'Mexique', region: 'Amérique Latine', lat: 21.1619, lng: -86.8515, currency: 'MXN', emoji: '🤿', popularHighlights: ['Chichen Itza', 'Cénotes', 'Tulum'] },
+  { city: 'Guadalajara', country: 'Mexique', region: 'Jalisco', lat: 20.6597, lng: -103.3496, currency: 'MXN', emoji: '🎺', popularHighlights: ['Teatro Degollado', 'Mariachi', 'Tlaquepaque'] },
+  { city: 'Oaxaca', country: 'Mexique', region: 'Oaxaca', lat: 17.0732, lng: -96.7266, currency: 'MXN', emoji: '🏺', popularHighlights: ['Monte Albán', 'Hierve el Agua'] },
   { city: 'Rio de Janeiro', country: 'Brésil', region: 'Amérique du Sud', lat: -22.9068, lng: -43.1729, currency: 'BRL', emoji: '⛰️', popularHighlights: ['Christ Rédempteur', 'Copacabana'] },
   { city: 'Buenos Aires', country: 'Argentine', region: 'Amérique du Sud', lat: -34.6037, lng: -58.3816, currency: 'ARS', emoji: '💃', popularHighlights: ['La Boca', 'San Telmo', 'Teatro Colón'] },
   { city: 'Cusco / Machu Picchu', country: 'Pérou', region: 'Amérique du Sud', lat: -13.5319, lng: -71.9675, currency: 'PEN', emoji: '🦙', popularHighlights: ['Machu Picchu', 'Vallée Sacrée'] },
@@ -83,7 +86,7 @@ export const WORLD_CITIES: WorldCity[] = [
   { city: 'Melbourne', country: 'Australie', region: 'Océanie', lat: -37.8136, lng: 144.9631, currency: 'AUD', emoji: '☕', popularHighlights: ['Great Ocean Road', 'Ruelles Street Art'] },
   { city: 'Auckland', country: 'Nouvelle-Zélande', region: 'Océanie', lat: -36.8485, lng: 174.7633, currency: 'NZD', emoji: '🥝', popularHighlights: ['Sky Tower', 'Waiheke'] },
   { city: 'Dubaï', country: 'Émirats Arabes Unis', region: 'Moyen-Orient', lat: 25.2048, lng: 55.2708, currency: 'AED', emoji: '🏙️', popularHighlights: ['Burj Khalifa', 'Désert safari'] },
-  { city: 'Le Caire', country: 'Égypte', region: 'Afrique', lat: 30.0444, lng: 31.2357, currency: 'EGP', emoji: '🐫', popularHighlights: ['Pyramides de Gizeh', 'Sphinx'] },
+  { city: 'Le Caire', country: 'Égypte', region: 'Afrique', lat: 30.0444, lng: 31.2357, currency: 'EGP', emoji: '🐪', popularHighlights: ['Pyramides de Gizeh', 'Sphinx'] },
   { city: 'Marrakech', country: 'Maroc', region: 'Afrique', lat: 31.6295, lng: -7.9811, currency: 'MAD', emoji: '🕌', popularHighlights: ['Jemaa el-Fna', 'Jardin Majorelle'] },
   { city: 'Le Cap (Cape Town)', country: 'Afrique du Sud', region: 'Afrique', lat: -33.9249, lng: 18.4241, currency: 'ZAR', emoji: '🐧', popularHighlights: ['Table Mountain', 'Cap de Bonne-Espérance'] }
 ];
@@ -210,6 +213,297 @@ export function getAutoCoverForDestination(destinationOrCountry: string): string
   return DEFAULT_TRAVEL_PHOTO;
 }
 
+// Iconic city emojis dictionary - maps specific world cities directly to their recognizable emblems
+export const ICONIC_CITY_EMOJIS: Record<string, string> = {
+  // Demandés explicitement par l'utilisateur
+  'pekin': '🐉',
+  'beijing': '🐉',
+  'chengdu': '🐼',
+  'londres': '🕰️',
+  'london': '🕰️',
+  'paris': '🗼',
+  'villahermosa': '🐊', // Crocodile, lagunes de Tabasco & Olmecas
+
+  // Europe
+  'rome': '🏛️',
+  'roma': '🏛️',
+  'venise': '🛶',
+  'venice': '🛶',
+  'venezia': '🛶',
+  'florence': '🎨',
+  'firenze': '🎨',
+  'milan': '👔',
+  'milano': '👔',
+  'naples': '🍕',
+  'napoli': '🍕',
+  'pise': '🏛️',
+  'pisa': '🏛️',
+  'barcelone': '🦎', // Salamandre du Parc Güell / Gaudí
+  'barcelona': '🦎',
+  'madrid': '🥘',
+  'seville': '💃',
+  'sevilla': '💃',
+  'valence': '🥘',
+  'valencia': '🥘',
+  'grenade': '🏰',
+  'granada': '🏰',
+  'ibiza': '🎧',
+  'majorque': '🏝️',
+  'mallorca': '🏝️',
+  'amsterdam': '🚲',
+  'bruxelles': '🍫',
+  'brussels': '🍫',
+  'bruges': '🦢',
+  'berlin': '🐻',
+  'munich': '🥨',
+  'francfort': '💼',
+  'frankfurt': '💼',
+  'hambourg': '⚓',
+  'vienne': '🎻',
+  'vienna': '🎻',
+  'salzbourg': '🎼',
+  'prague': '🏰',
+  'budapest': '♨️',
+  'varsovie': '🏰',
+  'warsaw': '🏰',
+  'cracovie': '🐉',
+  'athenes': '🏛️',
+  'athens': '🏛️',
+  'santorin': '🌅',
+  'santorini': '🌅',
+  'mykonos': '⛵',
+  'crete': '🏺',
+  'rhodes': '🏰',
+  'lisbonne': '🚋',
+  'lisbon': '🚋',
+  'lisboa': '🚋',
+  'porto': '🍷',
+  'faro': '🏖️',
+  'reykjavik': '🌋',
+  'oslo': '🏔️',
+  'bergen': '⛵',
+  'tromso': '🌌',
+  'stockholm': '⛵',
+  'copenhague': '🧜‍♀️',
+  'copenhagen': '🧜‍♀️',
+  'helsinki': '❄️',
+  'rovaniemi': '🎅',
+  'zurich': '🏔️',
+  'geneve': '⛲',
+  'geneva': '⛲',
+  'lucerne': '🌉',
+  'interlaken': '🪂',
+  'dubrovnik': '🛡️',
+  'split': '🏛️',
+  'zagreb': '🏰',
+  'edimbourg': '🏰',
+  'edinburgh': '🏰',
+  'dublin': '🍀',
+  'manchester': '⚽',
+  'liverpool': '🎸',
+  'oxford': '🎓',
+  'cambridge': '🎓',
+
+  // Asie
+  'tokyo': '🗼',
+  'kyoto': '⛩️',
+  'osaka': '🐙',
+  'nara': '🦌',
+  'hiroshima': '🕊️',
+  'sapporo': '❄️',
+  'okinawa': '🏝️',
+  'fukuoka': '🍜',
+  'shanghai': '🏙️',
+  'xi\'an': '🗿',
+  'xian': '🗿',
+  'guilin': '⛰️',
+  'yangshuo': '🚣',
+  'hong kong': '🚡',
+  'hongkong': '🚡',
+  'macao': '🎰',
+  'macau': '🎰',
+  'taipei': '🧋',
+  'seoul': '🥢',
+  'busan': '🏖️',
+  'jeju': '🗿',
+  'bangkok': '🛺',
+  'chiang mai': '🐘',
+  'phuket': '🏝️',
+  'krabi': '🧗',
+  'koh samui': '🥥',
+  'pattaya': '🏖️',
+  'singapour': '🦁',
+  'singapore': '🦁',
+  'kuala lumpur': '🏙️',
+  'penang': '🍜',
+  'bali': '🌺',
+  'ubud': '🐒',
+  'jakarta': '☕',
+  'lombok': '🏄',
+  'hanoi': '🍜',
+  'ho chi minh': '🛵',
+  'saigon': '🛵',
+  'hoi an': '🏮',
+  'da nang': '🌉',
+  'ha long': '⛵',
+  'halong': '⛵',
+  'siem reap': '🗿',
+  'phnom penh': '🛕',
+  'luang prabang': '🧘',
+  'delhi': '🕌',
+  'new delhi': '🕌',
+  'agra': '🕌',
+  'jaipur': '👑',
+  'mumbai': '🎬',
+  'bombay': '🎬',
+  'varanasi': '🪔',
+  'goa': '🌴',
+  'katmandou': '🏔️',
+  'kathmandu': '🏔️',
+  'colombo': '🐘',
+  'maldives': '🏝️',
+
+  // Amériques
+  'new york': '🗽',
+  'nyc': '🗽',
+  'san francisco': '🌁',
+  'los angeles': '🎬',
+  'hollywood': '🎬',
+  'las vegas': '🎲',
+  'miami': '🌴',
+  'chicago': '🎷',
+  'washington': '🏛️',
+  'la nouvelle-orleans': '🎺',
+  'new orleans': '🎺',
+  'seattle': '☕',
+  'boston': '🎓',
+  'honolulu': '🌺',
+  'hawai': '🌺',
+  'hawaii': '🌺',
+  'orlando': '🏰',
+  'montreal': '🍁',
+  'quebec': '🏰',
+  'vancouver': '🌲',
+  'toronto': '🗼',
+  'calgary': '🤠',
+  'mexico': '🌮',
+  'ciudad de mexico': '🌮',
+  'guadalajara': '🎺',
+  'oaxaca': '🏺',
+  'cancun': '🤿',
+  'tulum': '🗿',
+  'merida': '🦩',
+  'playa del carmen': '🏖️',
+  'la havane': '🚗',
+  'havana': '🚗',
+  'rio de janeiro': '⛰️',
+  'rio': '⛰️',
+  'sao paulo': '🏙️',
+  'salvador de bahia': '🥁',
+  'brasilia': '🏛️',
+  'buenos aires': '💃',
+  'bariloche': '🍫',
+  'mendoza': '🍷',
+  'ushuaia': '🐧',
+  'santiago': '🍷',
+  'valparaiso': '🎨',
+  'lima': '🍽️',
+  'cusco': '🦙',
+  'machu picchu': '🦙',
+  'bogota': '☕',
+  'medellin': '🚡',
+  'cartagene': '🏴‍☠️',
+  'cartagena': '🏴‍☠️',
+  'la paz': '🚡',
+  'quito': '🌋',
+  'galapagos': '🐢',
+
+  // Océanie, Afrique, Moyen-Orient
+  'sydney': '🦘',
+  'melbourne': '☕',
+  'brisbane': '🐨',
+  'perth': '🐬',
+  'cairns': '🐠',
+  'auckland': '🥝',
+  'queenstown': '🏂',
+  'wellington': '💨',
+  'le caire': '🐪',
+  'cairo': '🐪',
+  'louxor': '🏛️',
+  'luxor': '🏛️',
+  'assouan': '⛵',
+  'marrakech': '🕌',
+  'casablanca': '🌊',
+  'fes': '🏺',
+  'fez': '🏺',
+  'chefchaouen': '💙',
+  'rabat': '🏛️',
+  'le cap': '🐧',
+  'cape town': '🐧',
+  'johannesburg': '🦁',
+  'nairobi': '🦒',
+  'mombasa': '🏖️',
+  'zanzibar': '🏝️',
+  'serengeti': '🦁',
+  'kilimandjaro': '🌋',
+  'kilimanjaro': '🌋',
+  'dubai': '🏙️',
+  'abou dhabi': '🕌',
+  'abu dhabi': '🕌',
+  'doha': '🇶🇦',
+  'mascate': '⛵',
+  'muscat': '⛵',
+  'amman': '🏛️',
+  'petra': '🏛️',
+  'jerusalem': '🕊️',
+  'tel aviv': '🏖️',
+  'beyrouth': '🌲',
+  'beirut': '🌲',
+  'antananarivo': '🦎',
+  'maurice': '🏝️',
+  'ile maurice': '🏝️',
+  'la reunion': '🌋',
+  'reunion': '🌋',
+  'tahiti': '🌺',
+  'bora bora': '🏝️',
+  'noumea': '🐚',
+};
+
+export function detectCurrencyForCountry(country: string): string {
+  if (!country) return 'EUR';
+  const c = country.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  if (c.includes('france') || c.includes('ital') || c.includes('espag') || c.includes('spain') || c.includes('allemag') || c.includes('germany') || c.includes('portug') || c.includes('grec') || c.includes('greece') || c.includes('belg') || c.includes('irland') || c.includes('autrich') || c.includes('austria') || c.includes('pays-bas') || c.includes('netherland') || c.includes('finland')) return 'EUR';
+  if (c.includes('unit') || c.includes('royaume-uni') || c.includes('england') || c.includes('lond') || c.includes('brit') || c.includes('ecosse') || c.includes('scotland')) return 'GBP';
+  if (c.includes('mexic') || c.includes('mexiq')) return 'MXN';
+  if (c.includes('etats-unis') || c.includes('united states') || c.includes('usa') || c.includes('america')) return 'USD';
+  if (c.includes('japon') || c.includes('japan')) return 'JPY';
+  if (c.includes('chine') || c.includes('china')) return 'CNY';
+  if (c.includes('suiss') || c.includes('switz')) return 'CHF';
+  if (c.includes('canad')) return 'CAD';
+  if (c.includes('austral')) return 'AUD';
+  if (c.includes('zeland') || c.includes('zealand')) return 'NZD';
+  if (c.includes('thail')) return 'THB';
+  if (c.includes('indones')) return 'IDR';
+  if (c.includes('bresil') || c.includes('brazil')) return 'BRL';
+  if (c.includes('argentin')) return 'ARS';
+  if (c.includes('perou') || c.includes('peru')) return 'PEN';
+  if (c.includes('maroc') || c.includes('morocco')) return 'MAD';
+  if (c.includes('egypt')) return 'EGP';
+  if (c.includes('emirat') || c.includes('dubai') || c.includes('uae')) return 'AED';
+  if (c.includes('cor') || c.includes('korea')) return 'KRW';
+  if (c.includes('singap')) return 'SGD';
+  if (c.includes('turqu') || c.includes('turkey')) return 'TRY';
+  if (c.includes('vietnam')) return 'VND';
+  if (c.includes('inde') || c.includes('india')) return 'INR';
+  if (c.includes('islande') || c.includes('iceland')) return 'ISK';
+  if (c.includes('norveg') || c.includes('norway')) return 'NOK';
+  if (c.includes('sued') || c.includes('sweden')) return 'SEK';
+  if (c.includes('danemark') || c.includes('denmark')) return 'DKK';
+  if (c.includes('tcheq') || c.includes('czech')) return 'CZK';
+  if (c.includes('hongr') || c.includes('hungary')) return 'HUF';
+  return 'EUR';
+}
+
 export function searchDestinations(query: string): WorldCity[] {
   if (!query || query.trim() === '') return WORLD_CITIES.slice(0, 15);
   const q = query.toLowerCase().trim();
@@ -219,6 +513,71 @@ export function searchDestinations(query: string): WorldCity[] {
       c.country.toLowerCase().includes(q) ||
       c.region.toLowerCase().includes(q)
   );
+}
+
+// Global Worldwide geocoding: OpenStreetMap Photon with Nominatim fallback
+export async function fetchGlobalCities(query: string): Promise<WorldCity[]> {
+  const cleanQ = query.trim();
+  if (!cleanQ) return WORLD_CITIES.slice(0, 15);
+
+  // 1. Instant local results
+  const localMatches = searchDestinations(cleanQ);
+
+  if (cleanQ.length < 2) {
+    return localMatches;
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+    const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(cleanQ)}&limit=10&lang=fr`;
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      return localMatches;
+    }
+
+    const data = await res.json();
+    if (!data || !Array.isArray(data.features) || data.features.length === 0) {
+      return localMatches;
+    }
+
+    const remoteCities: WorldCity[] = [];
+    const seenNames = new Set(localMatches.map((m) => m.city.toLowerCase()));
+
+    for (const feat of data.features) {
+      const props = feat.properties || {};
+      const cityName = props.name || props.city || props.district || props.street;
+      if (!cityName) continue;
+
+      const normCity = cityName.toLowerCase();
+      if (seenNames.has(normCity)) continue;
+      seenNames.add(normCity);
+
+      const countryName = props.country || props.countrycode || 'Monde';
+      const regionName = props.state || props.county || props.city || '';
+      const [lng, lat] = feat.geometry?.coordinates || [0, 0];
+
+      const currency = detectCurrencyForCountry(countryName);
+      const emoji = getAutoEmojiForDestination(`${cityName} ${countryName}`);
+
+      remoteCities.push({
+        city: cityName,
+        country: countryName,
+        region: regionName,
+        lat: Number(lat.toFixed(4)),
+        lng: Number(lng.toFixed(4)),
+        currency,
+        emoji,
+      });
+    }
+
+    return [...localMatches, ...remoteCities].slice(0, 15);
+  } catch (_err) {
+    return localMatches;
+  }
 }
 
 export function buildGoogleMapsUrl(locationName: string, lat?: number, lng?: number): string {
@@ -236,7 +595,16 @@ export function getAutoEmojiForDestination(destinationOrCountry: string): string
     .replace(/[\u0300-\u036f]/g, '')
     .trim();
 
-  // 1. Direct city / country match in WORLD_CITIES
+  // 1. Direct match in ICONIC_CITY_EMOJIS (prioritize specific iconic city symbols like Beijing 🐉, Chengdu 🐼, London 🕰️, Paris 🗼, Villahermosa 🐊)
+  // Sort keys by descending length so "san francisco" matches before "san"
+  const iconicKeys = Object.keys(ICONIC_CITY_EMOJIS).sort((a, b) => b.length - a.length);
+  for (const key of iconicKeys) {
+    if (norm.includes(key)) {
+      return ICONIC_CITY_EMOJIS[key];
+    }
+  }
+
+  // 2. Direct city / country match in curated WORLD_CITIES
   const match = WORLD_CITIES.find((c) => {
     const cCity = c.city.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     const cCountry = c.country.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -244,46 +612,47 @@ export function getAutoEmojiForDestination(destinationOrCountry: string): string
   });
   if (match) return match.emoji;
 
-  // 2. High-precision rulebook for all continents
-  if (norm.includes('japon') || norm.includes('japan') || norm.includes('tokyo') || norm.includes('kyoto') || norm.includes('osaka')) return '⛩️';
-  if (norm.includes('chine') || norm.includes('china') || norm.includes('pekin') || norm.includes('shanghai') || norm.includes('beijing')) return '🏮';
-  if (norm.includes('itali') || norm.includes('italy') || norm.includes('rome') || norm.includes('florence') || norm.includes('venis') || norm.includes('milan')) return '🏛️';
-  if (norm.includes('franc') || norm.includes('paris') || norm.includes('marseille') || norm.includes('lyon') || norm.includes('nice')) return '🗼';
-  if (norm.includes('espagn') || norm.includes('spain') || norm.includes('barcelon') || norm.includes('madrid') || norm.includes('sevill')) return '🥘';
-  if (norm.includes('grec') || norm.includes('greece') || norm.includes('athen') || norm.includes('santorin') || norm.includes('mykonos')) return '🏛️';
-  if (norm.includes('usa') || norm.includes('etats-unis') || norm.includes('new york') || norm.includes('californi') || norm.includes('miami')) return '🗽';
-  if (norm.includes('anglet') || norm.includes('uk') || norm.includes('londres') || norm.includes('london') || norm.includes('britain')) return '🎡';
-  if (norm.includes('ecosse') || norm.includes('scotland') || norm.includes('edinburgh')) return '🏰';
-  if (norm.includes('irland') || norm.includes('dublin')) return '🍀';
-  if (norm.includes('australi') || norm.includes('sydney') || norm.includes('melbourne')) return '🦘';
-  if (norm.includes('zeland') || norm.includes('auckland')) return '🥝';
-  if (norm.includes('thailand') || norm.includes('bangkok') || norm.includes('phuket')) return '🛕';
-  if (norm.includes('bali') || norm.includes('indonesi') || norm.includes('jakarta')) return '🌺';
-  if (norm.includes('vietnam') || norm.includes('hanoi') || norm.includes('saigon')) return '🍜';
-  if (norm.includes('islande') || norm.includes('iceland') || norm.includes('reykjavik')) return '🧊';
-  if (norm.includes('suiss') || norm.includes('switzerland') || norm.includes('genev') || norm.includes('zurich')) return '🏔️';
-  if (norm.includes('norveg') || norm.includes('norway') || norm.includes('oslo') || norm.includes('fjord')) return '🏔️';
-  if (norm.includes('sued') || norm.includes('sweden') || norm.includes('stockholm')) return '⛵';
-  if (norm.includes('danemark') || norm.includes('denmark') || norm.includes('copenhagu')) return '🧜‍♀️';
-  if (norm.includes('allemag') || norm.includes('germany') || norm.includes('berlin') || norm.includes('munich')) return '🍺';
-  if (norm.includes('belg') || norm.includes('bruxell')) return '🍫';
-  if (norm.includes('pays-bas') || norm.includes('holland') || norm.includes('amsterdam')) return '🚲';
-  if (norm.includes('portugal') || norm.includes('lisbon') || norm.includes('porto')) return '🚋';
-  if (norm.includes('autrich') || norm.includes('austria') || norm.includes('vienn')) return '🎻';
-  if (norm.includes('tcheq') || norm.includes('pragu')) return '🏰';
-  if (norm.includes('hongri') || norm.includes('budapest')) return '♨️';
-  if (norm.includes('croati') || norm.includes('dubrovnik') || norm.includes('split')) return '🛡️';
-  if (norm.includes('turqui') || norm.includes('turkey') || norm.includes('istanbul')) return '🕌';
-  if (norm.includes('maroc') || norm.includes('morocco') || norm.includes('marrakech')) return '🕌';
-  if (norm.includes('egypt') || norm.includes('caire')) return '🐫';
-  if (norm.includes('dubai') || norm.includes('emirats')) return '🏙️';
-  if (norm.includes('bresil') || norm.includes('brazil') || norm.includes('rio')) return '⛰️';
-  if (norm.includes('argentin') || norm.includes('buenos aires')) return '💃';
-  if (norm.includes('mexiq') || norm.includes('mexico') || norm.includes('cancun')) return '🌮';
-  if (norm.includes('perou') || norm.includes('peru') || norm.includes('cusco') || norm.includes('machu')) return '🦙';
-  if (norm.includes('canad') || norm.includes('montreal') || norm.includes('quebec')) return '🍁';
-  if (norm.includes('inde') || norm.includes('india') || norm.includes('delhi')) return '🕌';
-  if (norm.includes('coree') || norm.includes('korea') || norm.includes('seoul')) return '🥢';
+  // 3. Country-level fallbacks
+  if (norm.includes('japon') || norm.includes('japan')) return '⛩️';
+  if (norm.includes('chine') || norm.includes('china')) return '🐉';
+  if (norm.includes('itali') || norm.includes('italy')) return '🏛️';
+  if (norm.includes('franc') || norm.includes('france')) return '🗼';
+  if (norm.includes('espagn') || norm.includes('spain')) return '🥘';
+  if (norm.includes('grec') || norm.includes('greece')) return '🏛️';
+  if (norm.includes('usa') || norm.includes('etats-unis') || norm.includes('united states')) return '🗽';
+  if (norm.includes('anglet') || norm.includes('uk') || norm.includes('royaume-uni') || norm.includes('britain')) return '🕰️';
+  if (norm.includes('ecosse') || norm.includes('scotland')) return '🏰';
+  if (norm.includes('irland') || norm.includes('ireland')) return '🍀';
+  if (norm.includes('australi')) return '🦘';
+  if (norm.includes('zeland') || norm.includes('zealand')) return '🥝';
+  if (norm.includes('thailand') || norm.includes('thailande')) return '🛕';
+  if (norm.includes('bali') || norm.includes('indonesi')) return '🌺';
+  if (norm.includes('vietnam')) return '🍜';
+  if (norm.includes('islande') || norm.includes('iceland')) return '🌋';
+  if (norm.includes('suiss') || norm.includes('switzerland')) return '🏔️';
+  if (norm.includes('norveg') || norm.includes('norway')) return '🏔️';
+  if (norm.includes('sued') || norm.includes('sweden')) return '⛵';
+  if (norm.includes('danemark') || norm.includes('denmark')) return '🧜‍♀️';
+  if (norm.includes('allemag') || norm.includes('germany')) return '🥨';
+  if (norm.includes('belg') || norm.includes('belgium')) return '🍫';
+  if (norm.includes('pays-bas') || norm.includes('holland') || norm.includes('netherland')) return '🚲';
+  if (norm.includes('portugal')) return '🚋';
+  if (norm.includes('autrich') || norm.includes('austria')) return '🎻';
+  if (norm.includes('tcheq') || norm.includes('czech')) return '🏰';
+  if (norm.includes('hongri') || norm.includes('hungary')) return '♨️';
+  if (norm.includes('croati')) return '🛡️';
+  if (norm.includes('turqui') || norm.includes('turkey')) return '🕌';
+  if (norm.includes('maroc') || norm.includes('morocco')) return '🕌';
+  if (norm.includes('egypt')) return '🐪';
+  if (norm.includes('dubai') || norm.includes('emirats') || norm.includes('uae')) return '🏙️';
+  if (norm.includes('bresil') || norm.includes('brazil')) return '⛰️';
+  if (norm.includes('argentin')) return '💃';
+  if (norm.includes('mexiq') || norm.includes('mexico')) return '🌮';
+  if (norm.includes('perou') || norm.includes('peru')) return '🦙';
+  if (norm.includes('canad')) return '🍁';
+  if (norm.includes('inde') || norm.includes('india')) return '🕌';
+  if (norm.includes('coree') || norm.includes('korea')) return '🥢';
+  if (norm.includes('singapour') || norm.includes('singapore')) return '🦁';
   if (norm.includes('plage') || norm.includes('beach') || norm.includes('ile') || norm.includes('island')) return '🏝️';
   if (norm.includes('montagne') || norm.includes('mountain') || norm.includes('alpes')) return '🏔️';
   if (norm.includes('desert') || norm.includes('safari')) return '🏜️';

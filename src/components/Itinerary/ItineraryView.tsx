@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Step, Accommodation, Activity, Expense, Transport } from '../../types/travel';
 import {
   searchDestinations,
+  fetchGlobalCities,
   buildGoogleMapsUrl,
   WorldCity,
   getAutoEmojiForDestination,
@@ -20,6 +21,7 @@ import {
   Trash2,
   Edit2,
   Clock,
+  Loader2,
 } from 'lucide-react';
 import { ShahrabadDatePicker } from '../Common/ShahrabadDatePicker';
 
@@ -64,8 +66,39 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
   const [notes, setNotes] = useState('');
   const [lat, setLat] = useState<number | undefined>(undefined);
   const [lng, setLng] = useState<number | undefined>(undefined);
+  const [citySuggestions, setCitySuggestions] = useState<WorldCity[]>(() => searchDestinations(''));
+  const [isSearchingCities, setIsSearchingCities] = useState(false);
 
-  const filteredCitySuggestions = searchDestinations(destinationQuery);
+  useEffect(() => {
+    if (!destinationQuery.trim()) {
+      setCitySuggestions(searchDestinations(''));
+      setIsSearchingCities(false);
+      return;
+    }
+
+    // Immediately show local matches so UI feels instant
+    setCitySuggestions(searchDestinations(destinationQuery));
+
+    let isMounted = true;
+    setIsSearchingCities(true);
+
+    const timer = setTimeout(async () => {
+      try {
+        const results = await fetchGlobalCities(destinationQuery);
+        if (isMounted) {
+          setCitySuggestions(results);
+          setIsSearchingCities(false);
+        }
+      } catch (_err) {
+        if (isMounted) setIsSearchingCities(false);
+      }
+    }, 250);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
+  }, [destinationQuery]);
 
   const openAddModal = () => {
     // Determine default dates from last step
@@ -429,35 +462,51 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
             <form onSubmit={handleSaveStep} className="p-5 space-y-4 overflow-y-auto flex-1">
               {/* Worldwide City Autocomplete Suggestion */}
               <div>
-                <label className="block text-xs font-semibold text-[#edf0eb] mb-1">
-                  Rechercher une ville mondiale ou saisir librement
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-semibold text-[#edf0eb]">
+                    Rechercher n'importe quelle ville du monde (OpenStreetMap)
+                  </label>
+                  {isSearchingCities && (
+                    <span className="text-[10px] text-[#c6a56a] flex items-center gap-1 font-mono">
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      Recherche mondiale...
+                    </span>
+                  )}
+                </div>
                 <div className="relative">
                   <input
                     type="text"
                     value={destinationQuery}
                     onChange={(e) => setDestinationQuery(e.target.value)}
-                    placeholder="Ex: Rome, Tokyo, New York, Pékin, Guilin, Barcelone..."
+                    placeholder="Ex: Villahermosa, Chengdu, Londres, Pékin, Florence, Tokyo..."
                     className="w-full bg-[#0b0f14] border border-[rgba(198,165,106,0.25)] rounded-xl px-3.5 py-2.5 text-sm text-[#edf0eb] placeholder-[#657079] focus:outline-none focus:border-[#c6a56a]"
                   />
                   <MapPin className="w-4 h-4 text-[#c6a56a] absolute right-3 top-3 pointer-events-none" />
                 </div>
 
                 {destinationQuery.trim() !== '' && (
-                  <div className="mt-1 max-h-40 overflow-y-auto bg-slate-950 border border-slate-800 rounded-xl p-1 divide-y divide-slate-800/60 shadow-xl">
-                    {filteredCitySuggestions.map((city) => (
-                      <button
-                        type="button"
-                        key={`${city.city}-${city.country}`}
-                        onClick={() => handleSelectCitySuggestion(city)}
-                        className="w-full text-left px-3 py-2 text-xs hover:bg-slate-800/80 rounded-lg flex items-center justify-between text-slate-200 transition-colors"
-                      >
-                        <span className="font-medium">
-                          {city.emoji} {city.city} ({city.country})
-                        </span>
-                        <span className="text-[10px] text-slate-500">{city.region}</span>
-                      </button>
-                    ))}
+                  <div className="mt-1 max-h-48 overflow-y-auto bg-slate-950 border border-slate-800 rounded-xl p-1 divide-y divide-slate-800/60 shadow-xl">
+                    {citySuggestions.length === 0 ? (
+                      <div className="px-3 py-2 text-xs text-slate-400">
+                        {isSearchingCities ? 'Recherche sur le globe...' : 'Aucune ville trouvée. Vous pouvez saisir les détails ci-dessous.'}
+                      </div>
+                    ) : (
+                      citySuggestions.map((city, idx) => (
+                        <button
+                          type="button"
+                          key={`${city.city}-${city.country}-${city.lat}-${city.lng}-${idx}`}
+                          onClick={() => handleSelectCitySuggestion(city)}
+                          className="w-full text-left px-3 py-2 text-xs hover:bg-slate-800/80 rounded-lg flex items-center justify-between text-slate-200 transition-colors cursor-pointer group"
+                        >
+                          <span className="font-medium flex items-center gap-2">
+                            <span className="text-base">{city.emoji}</span>
+                            <span className="group-hover:text-[#c6a56a] transition-colors">{city.city}</span>
+                            <span className="text-slate-400 font-normal">({city.country})</span>
+                          </span>
+                          <span className="text-[10px] text-slate-500">{city.region}</span>
+                        </button>
+                      ))
+                    )}
                   </div>
                 )}
               </div>
