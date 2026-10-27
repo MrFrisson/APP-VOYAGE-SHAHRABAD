@@ -24,6 +24,7 @@ interface HeaderProps {
   onSelectTab: (tab: ActiveTab) => void;
   isMobilePreviewMode: boolean;
   onToggleMobilePreview: () => void;
+  cloudSyncStatus?: 'syncing' | 'saved' | 'idle' | 'error';
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -38,6 +39,7 @@ export const Header: React.FC<HeaderProps> = ({
   onSelectTab,
   isMobilePreviewMode,
   onToggleMobilePreview,
+  cloudSyncStatus = 'idle',
 }) => {
   return (
     <header className="sticky top-0 z-40 bg-[#0b0f14]/92 backdrop-blur-md border-b border-[rgba(198,165,106,0.22)] px-4 sm:px-8 py-3.5 flex items-center justify-between gap-4">
@@ -190,6 +192,26 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Zone 3: Device Preview Toggle & Actions */}
       <div className="flex items-center gap-2 shrink-0">
+        {/* Live Cloud Status Indicator */}
+        {cloudSyncStatus === 'syncing' && (
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#111820] border border-amber-500/40 text-[11px] text-amber-300 shadow-sm animate-pulse">
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping shrink-0" />
+            <span className="hidden lg:inline font-medium">Sauvegarde cloud...</span>
+          </div>
+        )}
+        {cloudSyncStatus === 'saved' && (
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#111820] border border-emerald-500/40 text-[11px] text-emerald-300 shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+            <span className="hidden lg:inline font-medium">Synchronisé Firebase</span>
+          </div>
+        )}
+        {cloudSyncStatus === 'error' && (
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#111820] border border-rose-500/40 text-[11px] text-rose-300 shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-rose-400 shrink-0" />
+            <span className="hidden lg:inline font-medium">Erreur sync cloud</span>
+          </div>
+        )}
+
         {/* Device Switcher (Phone vs Desktop) */}
         <button
           onClick={onToggleMobilePreview}

@@ -160,26 +160,27 @@ export function subscribeToTravelData(
 }
 
 // 4. Shared Carnets (Global synchronization across all users / colleague links)
+function sanitizeForFirestore<T>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj));
+}
+
 export async function saveSharedTravelData(data: TravelAppData): Promise<boolean> {
   try {
     const docRef = doc(db, 'app_data', 'global_state');
-    await setDoc(
-      docRef,
-      {
-        trips: data.trips || [],
-        steps: data.steps || [],
-        accommodations: data.accommodations || [],
-        transports: data.transports || [],
-        activities: data.activities || [],
-        expenses: data.expenses || [],
-        documents: data.documents || [],
-        links: data.links || [],
-        notes: data.notes || [],
-        activeTripId: data.activeTripId || '',
-        updatedAt: data.updatedAt || new Date().toISOString(),
-      },
-      { merge: true }
-    );
+    const sanitized = sanitizeForFirestore({
+      trips: data.trips || [],
+      steps: data.steps || [],
+      accommodations: data.accommodations || [],
+      transports: data.transports || [],
+      activities: data.activities || [],
+      expenses: data.expenses || [],
+      documents: data.documents || [],
+      links: data.links || [],
+      notes: data.notes || [],
+      activeTripId: data.activeTripId || '',
+      updatedAt: data.updatedAt || new Date().toISOString(),
+    });
+    await setDoc(docRef, sanitized);
     return true;
   } catch (error: any) {
     console.error('Failed to save to shared Firestore:', error);

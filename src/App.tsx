@@ -93,6 +93,8 @@ export default function App() {
     }, 3500);
   };
 
+  const [cloudSyncStatus, setCloudSyncStatus] = useState<'syncing' | 'saved' | 'idle' | 'error'>('idle');
+
   // Centralized mutation function: updates React state, saves locally, and immediately persists to Firebase Firestore
   const updateAppData = (updater: (prev: TravelAppData) => TravelAppData) => {
     setAppData((prev) => {
@@ -104,7 +106,20 @@ export default function App() {
       // 1. Instant local storage cache
       saveTravelData(withTimestamp);
       // 2. Instant real-time Firestore sync for all devices, users and locations
-      saveSharedTravelData(withTimestamp);
+      setCloudSyncStatus('syncing');
+      saveSharedTravelData(withTimestamp)
+        .then((ok) => {
+          if (ok) {
+            setCloudSyncStatus('saved');
+          } else {
+            setCloudSyncStatus('error');
+          }
+        })
+        .catch((err) => {
+          console.error('saveSharedTravelData caught:', err);
+          setCloudSyncStatus('error');
+        });
+
       return withTimestamp;
     });
   };
@@ -119,7 +134,9 @@ export default function App() {
         if (!active) return;
         if (cloudData && Array.isArray(cloudData.trips) && cloudData.trips.length > 0) {
           setAppData((current) => {
-            if (cloudData.updatedAt && current.updatedAt && cloudData.updatedAt < current.updatedAt) {
+            const cloudTime = cloudData.updatedAt ? new Date(cloudData.updatedAt).getTime() : 0;
+            const currentTime = current.updatedAt ? new Date(current.updatedAt).getTime() : 0;
+            if (currentTime > 0 && cloudTime <= currentTime) {
               return current;
             }
             const merged: TravelAppData = {
@@ -136,6 +153,7 @@ export default function App() {
               updatedAt: cloudData.updatedAt || new Date().toISOString(),
             };
             saveTravelData(merged);
+            setCloudSyncStatus('saved');
             return merged;
           });
         }
@@ -149,11 +167,9 @@ export default function App() {
       if (!active || !cloudData) return;
       if (Array.isArray(cloudData.trips)) {
         setAppData((current) => {
-          if (
-            cloudData.updatedAt &&
-            current.updatedAt &&
-            cloudData.updatedAt < current.updatedAt
-          ) {
+          const cloudTime = cloudData.updatedAt ? new Date(cloudData.updatedAt).getTime() : 0;
+          const currentTime = current.updatedAt ? new Date(current.updatedAt).getTime() : 0;
+          if (currentTime > 0 && cloudTime <= currentTime) {
             return current;
           }
 
@@ -176,6 +192,7 @@ export default function App() {
           };
 
           saveTravelData(merged);
+          setCloudSyncStatus('saved');
           return merged;
         });
       }
@@ -684,6 +701,7 @@ export default function App() {
         onSelectTab={setActiveTab}
         isMobilePreviewMode={isMobilePreviewMode}
         onToggleMobilePreview={() => setIsMobilePreviewMode(!isMobilePreviewMode)}
+        cloudSyncStatus={cloudSyncStatus}
       />
 
       {/* Device Mode Wrapper (Computer full-width vs. Mobile phone mockup) */}
