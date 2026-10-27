@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Trip,
   Step,
   Expense,
   Accommodation,
   Transport,
+  Activity,
   ExpenseCategory,
   PaymentStatus,
 } from '../../types/travel';
@@ -26,6 +27,7 @@ import {
   HelpCircle,
   Share2,
   Users,
+  Compass,
 } from 'lucide-react';
 import { TricountSection } from './TricountSection';
 import { ShahrabadDatePicker } from '../Common/ShahrabadDatePicker';
@@ -35,6 +37,7 @@ interface BudgetViewProps {
   steps: Step[];
   accommodations: Accommodation[];
   transports: Transport[];
+  activities: Activity[];
   expenses: Expense[];
   displayCurrency?: string;
   onSelectDisplayCurrency?: (currency: string) => void;
@@ -43,6 +46,15 @@ interface BudgetViewProps {
   onUpdateExpense: (expense: Expense) => void;
   onDeleteExpense: (expenseId: string) => void;
   onUpdateTripBudget: (newBudget: number) => void;
+  onAddActivity?: (activity: Omit<Activity, 'id' | 'tripId'>) => void;
+  onUpdateActivity?: (activity: Activity) => void;
+  onDeleteActivity?: (activityId: string) => void;
+  onAddAccommodation?: (acc: Omit<Accommodation, 'id' | 'tripId'>) => void;
+  onUpdateAccommodation?: (acc: Accommodation) => void;
+  onDeleteAccommodation?: (accId: string) => void;
+  onAddTransport?: (trans: Omit<Transport, 'id' | 'tripId'>) => void;
+  onUpdateTransport?: (trans: Transport) => void;
+  onDeleteTransport?: (transId: string) => void;
 }
 
 const CATEGORY_INFO: Record<
@@ -63,6 +75,7 @@ export const BudgetView: React.FC<BudgetViewProps> = ({
   steps,
   accommodations,
   transports,
+  activities,
   expenses,
   displayCurrency: propDisplayCurrency,
   onSelectDisplayCurrency,
@@ -71,6 +84,15 @@ export const BudgetView: React.FC<BudgetViewProps> = ({
   onUpdateExpense,
   onDeleteExpense,
   onUpdateTripBudget,
+  onAddActivity,
+  onUpdateActivity,
+  onDeleteActivity,
+  onAddAccommodation,
+  onUpdateAccommodation,
+  onDeleteAccommodation,
+  onAddTransport,
+  onUpdateTransport,
+  onDeleteTransport,
 }) => {
   const [internalCurrency, setInternalCurrency] = useState(trip.currency || 'EUR');
   const displayCurrency = propDisplayCurrency || internalCurrency;
@@ -89,11 +111,12 @@ export const BudgetView: React.FC<BudgetViewProps> = ({
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('prevu');
   const [amountPaid, setAmountPaid] = useState<number>(0);
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [syncWithModule, setSyncWithModule] = useState(true);
 
   const rates = getCachedRates();
 
   // Deduplicate and compute total budget items:
-  // We use recorded expenses as primary source. If an accommodation or transport has NO corresponding linked expense, we add it automatically to avoid double-counting.
+  // We use recorded expenses as primary source. If an accommodation, transport, or activity has NO corresponding linked expense, we add it automatically to avoid double-counting.
   const unifiedExpenses: {
     id: string;
     description: string;
@@ -106,6 +129,8 @@ export const BudgetView: React.FC<BudgetViewProps> = ({
     amountPaid: number;
     convertedPaid: number;
     isFromModule?: boolean;
+    moduleType?: 'accommodation' | 'transport' | 'activity';
+    moduleId?: string;
     date: string;
   }[] = [];
 
@@ -127,6 +152,8 @@ export const BudgetView: React.FC<BudgetViewProps> = ({
       amountPaid: e.amountPaid,
       convertedPaid: convPaid,
       isFromModule: false,
+      moduleType: e.linkedType,
+      moduleId: e.linkedId,
       date: e.date,
     });
   });
@@ -134,7 +161,7 @@ export const BudgetView: React.FC<BudgetViewProps> = ({
   // 2. Check for accommodations not yet in expenses
   accommodations.forEach((acc) => {
     const isAlreadyLinked = expenses.some(
-      (e) => (e.linkedType === 'accommodation' && e.linkedId === acc.id) || e.description.includes(acc.name)
+      (e) => (e.linkedType === 'accommodation' && e.linkedId === acc.id) || (e.category === 'accommodation' && e.description.toLowerCase().includes(acc.name.toLowerCase()))
     );
     if (!isAlreadyLinked && acc.priceTotal > 0) {
       const conv = convertCurrency(acc.priceTotal, acc.currency, displayCurrency, rates);
@@ -153,6 +180,8 @@ export const BudgetView: React.FC<BudgetViewProps> = ({
         amountPaid: acc.amountPaid,
         convertedPaid: convPaid,
         isFromModule: true,
+        moduleType: 'accommodation',
+        moduleId: acc.id,
         date: acc.checkIn,
       });
     }
@@ -161,7 +190,7 @@ export const BudgetView: React.FC<BudgetViewProps> = ({
   // 3. Check for transports not yet in expenses
   transports.forEach((tr) => {
     const isAlreadyLinked = expenses.some(
-      (e) => (e.linkedType === 'transport' && e.linkedId === tr.id) || e.description.includes(tr.departurePlace)
+      (e) => (e.linkedType === 'transport' && e.linkedId === tr.id) || (e.category === 'transport' && e.description.toLowerCase().includes(tr.departurePlace.toLowerCase()))
     );
     if (!isAlreadyLinked && tr.price > 0) {
       const conv = convertCurrency(tr.price, tr.currency, displayCurrency, rates);
@@ -180,7 +209,40 @@ export const BudgetView: React.FC<BudgetViewProps> = ({
         amountPaid: tr.amountPaid,
         convertedPaid: convPaid,
         isFromModule: true,
+        moduleType: 'transport',
+        moduleId: tr.id,
         date: tr.departureDateTime?.slice(0, 10) || '',
+      });
+    }
+  });
+
+  // 4. Check for activities not yet in expenses
+  activities.forEach((act) => {
+    const isAlreadyLinked = expenses.some(
+      (e) => (e.linkedType === 'activity' && e.linkedId === act.id) ||
+             (e.category === 'activity' && (e.description.toLowerCase().includes(act.name.toLowerCase()) || act.name.toLowerCase().includes(e.description.toLowerCase())))
+    );
+    if (!isAlreadyLinked && act.price > 0) {
+      const conv = convertCurrency(act.price, act.currency || trip.currency, displayCurrency, rates);
+      const isPaid = act.status === 'reserve' || act.status === 'effectue';
+      const paidVal = isPaid ? act.price : 0;
+      const convPaid = convertCurrency(paidVal, act.currency || trip.currency, displayCurrency, rates);
+
+      unifiedExpenses.push({
+        id: `auto-act-${act.id}`,
+        description: `Activité : ${act.name} (${act.category})`,
+        category: 'activity',
+        stepId: act.stepId,
+        amount: act.price,
+        currency: act.currency || trip.currency,
+        convertedAmount: conv,
+        paymentStatus: isPaid ? 'paye' : 'prevu',
+        amountPaid: paidVal,
+        convertedPaid: convPaid,
+        isFromModule: true,
+        moduleType: 'activity',
+        moduleId: act.id,
+        date: act.date || '',
       });
     }
   });
@@ -218,6 +280,29 @@ export const BudgetView: React.FC<BudgetViewProps> = ({
     stepTotals[sId] = (stepTotals[sId] || 0) + item.convertedAmount;
   });
 
+  // Convert unifiedExpenses so Tricount sees ALL expenses (explicit + activities + accommodations + transports)
+  const allTricountExpenses = useMemo<Expense[]>(() => {
+    return unifiedExpenses.map((u) => {
+      const existing = expenses.find((e) => e.id === u.id);
+      if (existing) return existing;
+      return {
+        id: u.id,
+        tripId: trip.id,
+        stepId: u.stepId,
+        category: u.category,
+        description: u.description,
+        amount: u.amount,
+        currency: u.currency,
+        date: u.date || new Date().toISOString().slice(0, 10),
+        paymentStatus: u.paymentStatus,
+        amountPaid: u.amountPaid,
+        linkedType: u.moduleType,
+        linkedId: u.moduleId,
+        paidBy: 'Moi',
+      };
+    });
+  }, [unifiedExpenses, expenses, trip.id]);
+
   const openAddModal = () => {
     setEditingExpense(null);
     setStepId(steps[0]?.id || '');
@@ -228,6 +313,7 @@ export const BudgetView: React.FC<BudgetViewProps> = ({
     setPaymentStatus('prevu');
     setAmountPaid(0);
     setDate(new Date().toISOString().slice(0, 10));
+    setSyncWithModule(true);
     setIsModalOpen(true);
   };
 
@@ -241,6 +327,7 @@ export const BudgetView: React.FC<BudgetViewProps> = ({
     setPaymentStatus(exp.paymentStatus);
     setAmountPaid(exp.amountPaid);
     setDate(exp.date);
+    setSyncWithModule(false);
     setIsModalOpen(true);
   };
 
@@ -260,7 +347,99 @@ export const BudgetView: React.FC<BudgetViewProps> = ({
         paymentStatus,
         amountPaid: paymentStatus === 'paye' ? amount : Math.min(amountPaid, amount),
       });
+
+      // Also update linked module item if present
+      if (editingExpense.linkedType === 'activity' && editingExpense.linkedId && onUpdateActivity) {
+        const act = activities.find((a) => a.id === editingExpense.linkedId);
+        if (act) {
+          onUpdateActivity({
+            ...act,
+            name: description.trim(),
+            price: amount,
+            currency,
+            stepId: stepId || undefined,
+          });
+        }
+      } else if (editingExpense.linkedType === 'accommodation' && editingExpense.linkedId && onUpdateAccommodation) {
+        const acc = accommodations.find((a) => a.id === editingExpense.linkedId);
+        if (acc) {
+          onUpdateAccommodation({
+            ...acc,
+            name: description.trim(),
+            priceTotal: amount,
+            currency,
+            stepId: stepId || undefined,
+          });
+        }
+      } else if (editingExpense.linkedType === 'transport' && editingExpense.linkedId && onUpdateTransport) {
+        const tr = transports.find((t) => t.id === editingExpense.linkedId);
+        if (tr) {
+          onUpdateTransport({
+            ...tr,
+            price: amount,
+            currency,
+            stepId: stepId || undefined,
+          });
+        }
+      }
     } else {
+      let linkedType: 'activity' | 'accommodation' | 'transport' | undefined;
+      let linkedId: string | undefined;
+
+      // Bi-directional creation: when user adds an expense with category activity/hotel/transport, automatically create it in the module!
+      if (syncWithModule) {
+        if (category === 'activity' && onAddActivity) {
+          const actId = `act-${Date.now()}`;
+          onAddActivity({
+            name: description.trim(),
+            stepId: stepId || undefined,
+            date: date || new Date().toISOString().slice(0, 10),
+            price: amount,
+            currency,
+            status: paymentStatus === 'paye' ? 'reserve' : 'idee',
+            category: 'Visite',
+          });
+          linkedType = 'activity';
+          linkedId = actId;
+        } else if (category === 'accommodation' && onAddAccommodation) {
+          const accId = `acc-${Date.now()}`;
+          const currentStep = steps.find((s) => s.id === stepId);
+          onAddAccommodation({
+            name: description.trim(),
+            stepId: stepId || undefined,
+            city: currentStep?.destination || trip.countries[0] || 'Ville',
+            address: currentStep?.destination || '',
+            country: currentStep?.country || trip.countries[0] || '',
+            checkIn: date || new Date().toISOString().slice(0, 10),
+            checkOut: date || new Date().toISOString().slice(0, 10),
+            nights: 1,
+            priceTotal: amount,
+            currency,
+            paymentStatus,
+            amountPaid: paymentStatus === 'paye' ? amount : amountPaid,
+            bookingStatus: 'confirme',
+          });
+          linkedType = 'accommodation';
+          linkedId = accId;
+        } else if (category === 'transport' && onAddTransport) {
+          const transId = `trans-${Date.now()}`;
+          const currentStep = steps.find((s) => s.id === stepId);
+          onAddTransport({
+            type: 'train',
+            stepId: stepId || undefined,
+            departurePlace: currentStep?.destination || 'Départ',
+            arrivalPlace: 'Arrivée',
+            departureDateTime: `${date || new Date().toISOString().slice(0, 10)}T10:00`,
+            price: amount,
+            currency,
+            paymentStatus,
+            amountPaid: paymentStatus === 'paye' ? amount : amountPaid,
+          });
+          linkedType = 'transport';
+          linkedId = transId;
+        }
+      }
+
       onAddExpense({
         stepId: stepId || undefined,
         category,
@@ -270,6 +449,8 @@ export const BudgetView: React.FC<BudgetViewProps> = ({
         date,
         paymentStatus,
         amountPaid: paymentStatus === 'paye' ? amount : Math.min(amountPaid, amount),
+        linkedType,
+        linkedId,
       });
     }
 
@@ -384,7 +565,7 @@ export const BudgetView: React.FC<BudgetViewProps> = ({
 
       {budgetSubTab === 'tricount' ? (
         <TricountSection
-          expenses={expenses}
+          expenses={allTricountExpenses}
           displayCurrency={displayCurrency}
           onUpdateExpense={onUpdateExpense}
           onAddExpense={onAddExpense}
@@ -661,27 +842,69 @@ export const BudgetView: React.FC<BudgetViewProps> = ({
                     </div>
                   </div>
 
-                  {!item.isFromModule && (
-                    <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
-                      <button
-                        onClick={() => {
-                          const original = expenses.find((e) => e.id === item.id);
-                          if (original) openEditModal(original);
-                        }}
-                        className="p-1.5 text-slate-400 hover:text-slate-200"
-                        title="Modifier"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => onDeleteExpense(item.id)}
-                        className="p-1.5 text-rose-400/80 hover:text-rose-300"
-                        title="Supprimer"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-1 bg-[#0b0f14] p-1 rounded-lg border border-[rgba(198,165,106,0.2)]">
+                    <button
+                      onClick={() => {
+                        if (item.isFromModule) {
+                          if (item.moduleType === 'activity' && onUpdateActivity) {
+                            const act = activities.find((a) => a.id === item.moduleId);
+                            if (act) {
+                              const newPrice = window.prompt(`Modifier le coût de l'activité "${act.name}" (${act.currency}) :`, String(act.price));
+                              if (newPrice !== null && !isNaN(Number(newPrice))) {
+                                onUpdateActivity({ ...act, price: Number(newPrice) });
+                              }
+                              return;
+                            }
+                          } else if (item.moduleType === 'accommodation' && onUpdateAccommodation) {
+                            const acc = accommodations.find((a) => a.id === item.moduleId);
+                            if (acc) {
+                              const newPrice = window.prompt(`Modifier le prix de l'hébergement "${acc.name}" (${acc.currency}) :`, String(acc.priceTotal));
+                              if (newPrice !== null && !isNaN(Number(newPrice))) {
+                                onUpdateAccommodation({ ...acc, priceTotal: Number(newPrice) });
+                              }
+                              return;
+                            }
+                          } else if (item.moduleType === 'transport' && onUpdateTransport) {
+                            const tr = transports.find((t) => t.id === item.moduleId);
+                            if (tr) {
+                              const newPrice = window.prompt(`Modifier le prix du transport (${tr.currency}) :`, String(tr.price));
+                              if (newPrice !== null && !isNaN(Number(newPrice))) {
+                                onUpdateTransport({ ...tr, price: Number(newPrice) });
+                              }
+                              return;
+                            }
+                          }
+                        }
+                        const original = expenses.find((e) => e.id === item.id);
+                        if (original) openEditModal(original);
+                      }}
+                      className="p-1.5 text-[#98a2a8] hover:text-[#edf0eb] transition-colors cursor-pointer"
+                      title="Modifier"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (item.isFromModule) {
+                          if (window.confirm(`Supprimer cet élément (${item.description}) ?`)) {
+                            if (item.moduleType === 'activity' && onDeleteActivity && item.moduleId) {
+                              onDeleteActivity(item.moduleId);
+                            } else if (item.moduleType === 'accommodation' && onDeleteAccommodation && item.moduleId) {
+                              onDeleteAccommodation(item.moduleId);
+                            } else if (item.moduleType === 'transport' && onDeleteTransport && item.moduleId) {
+                              onDeleteTransport(item.moduleId);
+                            }
+                          }
+                        } else {
+                          onDeleteExpense(item.id);
+                        }
+                      }}
+                      className="p-1.5 text-rose-400/80 hover:text-rose-300 transition-colors cursor-pointer"
+                      title="Supprimer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               </div>
             );
@@ -836,6 +1059,27 @@ export const BudgetView: React.FC<BudgetViewProps> = ({
                   </div>
                 )}
               </div>
+
+              {/* Bi-directional module sync checkbox */}
+              {!editingExpense && (category === 'activity' || category === 'accommodation' || category === 'transport') && (
+                <div className="p-3 bg-[#0b0f14] rounded-xl border border-[rgba(198,165,106,0.3)] flex items-start gap-2.5">
+                  <input
+                    type="checkbox"
+                    id="syncWithModuleCheckbox"
+                    checked={syncWithModule}
+                    onChange={(e) => setSyncWithModule(e.target.checked)}
+                    className="mt-0.5 rounded text-[#c6a56a] focus:ring-0 cursor-pointer"
+                  />
+                  <label htmlFor="syncWithModuleCheckbox" className="text-xs text-[#eadcc0] cursor-pointer">
+                    <span className="font-semibold block text-[#c6a56a]">
+                      Liaison automatique {category === 'activity' ? 'avec les Activités' : category === 'accommodation' ? 'avec les Hébergements' : 'avec les Transports'}
+                    </span>
+                    <span className="text-[11px] text-[#98a2a8]">
+                      Créer également cet élément dans son onglet dédié pour qu'il apparaisse dans l'itinéraire et le planning.
+                    </span>
+                  </label>
+                </div>
+              )}
 
               {/* Footer */}
               <div className="pt-2 border-t border-slate-800 flex items-center justify-end gap-3">

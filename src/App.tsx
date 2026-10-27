@@ -865,6 +865,10 @@ export default function App() {
                   onUpdateStep={handleUpdateStep}
                   onDeleteStep={handleDeleteStep}
                   onReorderSteps={handleReorderSteps}
+                  onAddActivity={handleAddActivity}
+                  onUpdateActivity={handleUpdateActivity}
+                  onDeleteActivity={handleDeleteActivity}
+                  onAddAccommodation={handleAddAccommodation}
                 />
               </div>
             )}
@@ -956,6 +960,7 @@ export default function App() {
                 steps={tripSteps}
                 accommodations={tripAccommodations}
                 transports={tripTransports}
+                activities={tripActivities}
                 expenses={tripExpenses}
                 displayCurrency={globalCurrency}
                 onSelectDisplayCurrency={setGlobalCurrency}
@@ -963,6 +968,15 @@ export default function App() {
                 onUpdateExpense={handleUpdateExpense}
                 onDeleteExpense={handleDeleteExpense}
                 onUpdateTripBudget={handleUpdateTripBudget}
+                onAddActivity={handleAddActivity}
+                onUpdateActivity={handleUpdateActivity}
+                onDeleteActivity={handleDeleteActivity}
+                onAddAccommodation={handleAddAccommodation}
+                onUpdateAccommodation={handleUpdateAccommodation}
+                onDeleteAccommodation={handleDeleteAccommodation}
+                onAddTransport={handleAddTransport}
+                onUpdateTransport={handleUpdateTransport}
+                onDeleteTransport={handleDeleteTransport}
                 onShareBudget={() => {
                   if (typeof navigator !== 'undefined' && navigator.clipboard) {
                     navigator.clipboard.writeText(window.location.href).catch(() => {});
