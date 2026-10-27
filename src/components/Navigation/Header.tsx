@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, Cloud, ChevronDown, Share2, Compass, Smartphone, Monitor } from 'lucide-react';
+import { Plus, ChevronDown, Share2, Compass, Smartphone, Monitor, FileArchive } from 'lucide-react';
 import { Trip } from '../../types/travel';
 
 export type ActiveTab =
@@ -18,7 +18,7 @@ interface HeaderProps {
   onSelectTrip: (tripId: string) => void;
   onOpenNewTripModal: () => void;
   onOpenTripsGallery: () => void;
-  onOpenSyncModal: () => void;
+  onExportZip: () => void;
   onShare?: () => void;
   activeTab: ActiveTab;
   onSelectTab: (tab: ActiveTab) => void;
@@ -32,7 +32,7 @@ export const Header: React.FC<HeaderProps> = ({
   onSelectTrip,
   onOpenNewTripModal,
   onOpenTripsGallery,
-  onOpenSyncModal,
+  onExportZip,
   onShare,
   activeTab,
   onSelectTab,
@@ -225,12 +225,12 @@ export const Header: React.FC<HeaderProps> = ({
         )}
 
         <button
-          onClick={onOpenSyncModal}
-          title="Enregistrer en 1 clic / Exporter en ZIP"
+          onClick={onExportZip}
+          title="Exporter l'archive ZIP de tous vos voyages"
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#111820] hover:bg-[#17212b] text-[#eadcc0] hover:text-[#c6a56a] border border-[rgba(198,165,106,0.3)] text-xs font-semibold transition-all cursor-pointer shadow-sm"
         >
-          <Cloud className="w-3.5 h-3.5 text-[#c6a56a]" />
-          <span className="hidden sm:inline font-medium">Enregistrer / ZIP</span>
+          <FileArchive className="w-3.5 h-3.5 text-[#c6a56a]" />
+          <span className="hidden sm:inline font-medium">Exporter en ZIP</span>
         </button>
 
         <button

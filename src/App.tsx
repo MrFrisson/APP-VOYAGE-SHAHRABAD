@@ -39,7 +39,7 @@ import { BudgetView } from './components/Budget/BudgetView';
 import { CurrencyConverter } from './components/Currency/CurrencyConverter';
 import { DocumentsView } from './components/Documents/DocumentsView';
 import { LinksNotesView } from './components/LinksAndNotes/LinksNotesView';
-import { DataSyncModal } from './components/Settings/DataSyncModal';
+import { exportZipArchive } from './services/zipExport';
 import {
   Calendar,
   Building2,
@@ -64,7 +64,17 @@ export default function App() {
   const [isTripModalOpen, setIsTripModalOpen] = useState(false);
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
   const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
-  const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
+  // Export ZIP handler
+  const handleExportZip = async () => {
+    try {
+      showToast("Génération de l'archive ZIP...");
+      await exportZipArchive(appData);
+      showToast("Archive ZIP téléchargée avec succès !");
+    } catch (err) {
+      console.error('Erreur export ZIP:', err);
+      showToast('Erreur lors de la création du ZIP');
+    }
+  };
 
   // Global Currency (controls display across the entire app)
   const [globalCurrency, setGlobalCurrency] = useState<string>(() => {
@@ -83,48 +93,92 @@ export default function App() {
     }, 3500);
   };
 
-  const isRemoteUpdateRef = React.useRef(false);
-  const debounceTimerRef = React.useRef<any>(null);
+  // Centralized mutation function: updates React state, saves locally, and immediately persists to Firebase Firestore
+  const updateAppData = (updater: (prev: TravelAppData) => TravelAppData) => {
+    setAppData((prev) => {
+      const next = updater(prev);
+      const withTimestamp: TravelAppData = {
+        ...next,
+        updatedAt: new Date().toISOString(),
+      };
+      // 1. Instant local storage cache
+      saveTravelData(withTimestamp);
+      // 2. Instant real-time Firestore sync for all devices, users and locations
+      saveSharedTravelData(withTimestamp);
+      return withTimestamp;
+    });
+  };
 
-  // 1. Initial Cloud Sync and Realtime Listener (colleague link & multi-device sync)
+  // Real-time synchronization across all devices and shared links
   useEffect(() => {
     let active = true;
 
-    // Load shared data from Firestore on startup
+    // Load initial data from Firestore immediately on boot
     loadSharedTravelData()
       .then((cloudData) => {
         if (!active) return;
         if (cloudData && Array.isArray(cloudData.trips) && cloudData.trips.length > 0) {
-          isRemoteUpdateRef.current = true;
-          setAppData((prev) => {
-            const merged = { ...prev, ...cloudData } as TravelAppData;
+          setAppData((current) => {
+            if (cloudData.updatedAt && current.updatedAt && cloudData.updatedAt < current.updatedAt) {
+              return current;
+            }
+            const merged: TravelAppData = {
+              trips: cloudData.trips || [],
+              steps: cloudData.steps || [],
+              accommodations: cloudData.accommodations || [],
+              transports: cloudData.transports || [],
+              activities: cloudData.activities || [],
+              expenses: cloudData.expenses || [],
+              documents: cloudData.documents || [],
+              links: cloudData.links || [],
+              notes: cloudData.notes || [],
+              activeTripId: cloudData.activeTripId || current.activeTripId || cloudData.trips?.[0]?.id || '',
+              updatedAt: cloudData.updatedAt || new Date().toISOString(),
+            };
             saveTravelData(merged);
             return merged;
           });
-        } else {
-          // If Firestore is still empty, populate Firestore with our current local trips
-          const local = loadTravelData();
-          if (local && Array.isArray(local.trips) && local.trips.length > 0) {
-            saveSharedTravelData(local);
-          }
         }
       })
       .catch((err) => {
-        console.warn('Initial cloud fetch:', err);
+        console.warn('Initial loadSharedTravelData:', err);
       });
 
-    // Realtime listener for shared data (with remote update flag to prevent loop)
+    // Subscribe to live Firestore changes across all devices
     const unsubscribe = subscribeToSharedTravelData((cloudData) => {
-      if (!active || !cloudData || !Array.isArray(cloudData.trips)) return;
-      isRemoteUpdateRef.current = true;
-      setAppData((current) => {
-        if (cloudData.updatedAt && current.updatedAt && cloudData.updatedAt <= current.updatedAt) {
-          return current;
-        }
-        const merged = { ...current, ...cloudData } as TravelAppData;
-        saveTravelData(merged);
-        return merged;
-      });
+      if (!active || !cloudData) return;
+      if (Array.isArray(cloudData.trips)) {
+        setAppData((current) => {
+          if (
+            cloudData.updatedAt &&
+            current.updatedAt &&
+            cloudData.updatedAt < current.updatedAt
+          ) {
+            return current;
+          }
+
+          const merged: TravelAppData = {
+            trips: cloudData.trips || [],
+            steps: cloudData.steps || [],
+            accommodations: cloudData.accommodations || [],
+            transports: cloudData.transports || [],
+            activities: cloudData.activities || [],
+            expenses: cloudData.expenses || [],
+            documents: cloudData.documents || [],
+            links: cloudData.links || [],
+            notes: cloudData.notes || [],
+            activeTripId:
+              cloudData.activeTripId ||
+              current.activeTripId ||
+              cloudData.trips?.[0]?.id ||
+              '',
+            updatedAt: cloudData.updatedAt || new Date().toISOString(),
+          };
+
+          saveTravelData(merged);
+          return merged;
+        });
+      }
     });
 
     return () => {
@@ -132,33 +186,6 @@ export default function App() {
       unsubscribe();
     };
   }, []);
-
-  // 2. Keep localStorage synced immediately, and debounce Firebase Cloud writes to respect quota
-  useEffect(() => {
-    // Always persist to local browser storage immediately
-    saveTravelData(appData);
-
-    // If this update arrived from the cloud listener, do not echo it back as a write!
-    if (isRemoteUpdateRef.current) {
-      isRemoteUpdateRef.current = false;
-      return;
-    }
-
-    // Debounce cloud write by 3 seconds to avoid spamming writes on rapid typing
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-
-    debounceTimerRef.current = setTimeout(() => {
-      saveSharedTravelData(appData);
-    }, 3000);
-
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-    };
-  }, [appData]);
 
   // Current active trip (can be null if 0 trips exist)
   const currentTrip =
@@ -195,7 +222,7 @@ export default function App() {
   // Switch Active Trip
   const handleSelectTrip = (tripId: string) => {
     const target = appData.trips.find((t) => t.id === tripId);
-    setAppData((prev) => ({
+    updateAppData((prev) => ({
       ...prev,
       activeTripId: tripId,
     }));
@@ -211,7 +238,7 @@ export default function App() {
   ) => {
     if (editingTrip) {
       // Edit
-      setAppData((prev) => ({
+      updateAppData((prev) => ({
         ...prev,
         trips: prev.trips.map((t) =>
           t.id === editingTrip.id
@@ -229,7 +256,7 @@ export default function App() {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      setAppData((prev) => ({
+      updateAppData((prev) => ({
         ...prev,
         trips: [newTrip, ...prev.trips],
         activeTripId: newTripId,
@@ -321,7 +348,7 @@ export default function App() {
       tripId: newTripId,
     }));
 
-    setAppData((prev) => ({
+    updateAppData((prev) => ({
       ...prev,
       trips: [duplicatedTrip, ...prev.trips],
       activeTripId: newTripId,
@@ -353,7 +380,7 @@ export default function App() {
     ) {
       const remainingTrips = appData.trips.filter((t) => t.id !== targetTrip.id);
       const nextActiveTripId = remainingTrips.length > 0 ? remainingTrips[0].id : '';
-      setAppData((prev) => ({
+      updateAppData((prev) => ({
         ...prev,
         trips: remainingTrips,
         activeTripId: nextActiveTripId,
@@ -381,7 +408,7 @@ export default function App() {
       tripId: currentTrip.id,
       order: tripSteps.length + 1,
     };
-    setAppData((prev) => ({
+    updateAppData((prev) => ({
       ...prev,
       steps: [...prev.steps, newStep],
     }));
@@ -389,7 +416,7 @@ export default function App() {
   };
 
   const handleUpdateStep = (step: Step) => {
-    setAppData((prev) => ({
+    updateAppData((prev) => ({
       ...prev,
       steps: prev.steps.map((s) => (s.id === step.id ? step : s)),
     }));
@@ -397,7 +424,7 @@ export default function App() {
   };
 
   const handleDeleteStep = (stepId: string) => {
-    setAppData((prev) => ({
+    updateAppData((prev) => ({
       ...prev,
       steps: prev.steps.filter((s) => s.id !== stepId),
     }));
@@ -405,7 +432,7 @@ export default function App() {
   };
 
   const handleReorderSteps = (reordered: Step[]) => {
-    setAppData((prev) => {
+    updateAppData((prev) => {
       const otherSteps = prev.steps.filter((s) => s.tripId !== currentTrip.id);
       return {
         ...prev,
@@ -422,7 +449,7 @@ export default function App() {
       id: `acc-${Date.now()}`,
       tripId: currentTrip.id,
     };
-    setAppData((prev) => ({
+    updateAppData((prev) => ({
       ...prev,
       accommodations: [...prev.accommodations, newAcc],
     }));
@@ -430,7 +457,7 @@ export default function App() {
   };
 
   const handleUpdateAccommodation = (acc: Accommodation) => {
-    setAppData((prev) => ({
+    updateAppData((prev) => ({
       ...prev,
       accommodations: prev.accommodations.map((a) => (a.id === acc.id ? acc : a)),
     }));
@@ -438,7 +465,7 @@ export default function App() {
   };
 
   const handleDeleteAccommodation = (accId: string) => {
-    setAppData((prev) => ({
+    updateAppData((prev) => ({
       ...prev,
       accommodations: prev.accommodations.filter((a) => a.id !== accId),
     }));
@@ -452,7 +479,7 @@ export default function App() {
       id: `trans-${Date.now()}`,
       tripId: currentTrip.id,
     };
-    setAppData((prev) => ({
+    updateAppData((prev) => ({
       ...prev,
       transports: [...prev.transports, newTrans],
     }));
@@ -460,7 +487,7 @@ export default function App() {
   };
 
   const handleUpdateTransport = (t: Transport) => {
-    setAppData((prev) => ({
+    updateAppData((prev) => ({
       ...prev,
       transports: prev.transports.map((item) => (item.id === t.id ? t : item)),
     }));
@@ -468,7 +495,7 @@ export default function App() {
   };
 
   const handleDeleteTransport = (transId: string) => {
-    setAppData((prev) => ({
+    updateAppData((prev) => ({
       ...prev,
       transports: prev.transports.filter((t) => t.id !== transId),
     }));
@@ -482,7 +509,7 @@ export default function App() {
       id: `act-${Date.now()}`,
       tripId: currentTrip.id,
     };
-    setAppData((prev) => ({
+    updateAppData((prev) => ({
       ...prev,
       activities: [...prev.activities, newAct],
     }));
@@ -490,7 +517,7 @@ export default function App() {
   };
 
   const handleUpdateActivity = (act: Activity) => {
-    setAppData((prev) => ({
+    updateAppData((prev) => ({
       ...prev,
       activities: prev.activities.map((a) => (a.id === act.id ? act : a)),
     }));
@@ -498,7 +525,7 @@ export default function App() {
   };
 
   const handleDeleteActivity = (actId: string) => {
-    setAppData((prev) => ({
+    updateAppData((prev) => ({
       ...prev,
       activities: prev.activities.filter((a) => a.id !== actId),
     }));
@@ -512,7 +539,7 @@ export default function App() {
       id: `exp-${Date.now()}`,
       tripId: currentTrip.id,
     };
-    setAppData((prev) => ({
+    updateAppData((prev) => ({
       ...prev,
       expenses: [...prev.expenses, newExp],
     }));
@@ -520,7 +547,7 @@ export default function App() {
   };
 
   const handleUpdateExpense = (exp: Expense) => {
-    setAppData((prev) => ({
+    updateAppData((prev) => ({
       ...prev,
       expenses: prev.expenses.map((e) => (e.id === exp.id ? exp : e)),
     }));
@@ -528,7 +555,7 @@ export default function App() {
   };
 
   const handleDeleteExpense = (expId: string) => {
-    setAppData((prev) => ({
+    updateAppData((prev) => ({
       ...prev,
       expenses: prev.expenses.filter((e) => e.id !== expId),
     }));
@@ -536,7 +563,7 @@ export default function App() {
   };
 
   const handleUpdateTripBudget = (newBudget: number) => {
-    setAppData((prev) => ({
+    updateAppData((prev) => ({
       ...prev,
       trips: prev.trips.map((t) =>
         t.id === currentTrip.id ? { ...t, totalBudget: newBudget } : t
@@ -552,7 +579,7 @@ export default function App() {
       id: `doc-${Date.now()}`,
       tripId: currentTrip.id,
     };
-    setAppData((prev) => ({
+    updateAppData((prev) => ({
       ...prev,
       documents: [...prev.documents, newDoc],
     }));
@@ -560,7 +587,7 @@ export default function App() {
   };
 
   const handleUpdateDocument = (doc: DocumentItem) => {
-    setAppData((prev) => ({
+    updateAppData((prev) => ({
       ...prev,
       documents: prev.documents.map((d) => (d.id === doc.id ? doc : d)),
     }));
@@ -568,7 +595,7 @@ export default function App() {
   };
 
   const handleDeleteDocument = (docId: string) => {
-    setAppData((prev) => ({
+    updateAppData((prev) => ({
       ...prev,
       documents: prev.documents.filter((d) => d.id !== docId),
     }));
@@ -582,7 +609,7 @@ export default function App() {
       id: `link-${Date.now()}`,
       tripId: currentTrip.id,
     };
-    setAppData((prev) => ({
+    updateAppData((prev) => ({
       ...prev,
       links: [...prev.links, newLink],
     }));
@@ -590,7 +617,7 @@ export default function App() {
   };
 
   const handleDeleteLink = (linkId: string) => {
-    setAppData((prev) => ({
+    updateAppData((prev) => ({
       ...prev,
       links: prev.links.filter((l) => l.id !== linkId),
     }));
@@ -603,7 +630,7 @@ export default function App() {
       id: `note-${Date.now()}`,
       tripId: currentTrip.id,
     };
-    setAppData((prev) => ({
+    updateAppData((prev) => ({
       ...prev,
       notes: [...prev.notes, newNote],
     }));
@@ -611,7 +638,7 @@ export default function App() {
   };
 
   const handleUpdateNote = (note: GeneralNote) => {
-    setAppData((prev) => ({
+    updateAppData((prev) => ({
       ...prev,
       notes: prev.notes.map((n) => (n.id === note.id ? note : n)),
     }));
@@ -619,7 +646,7 @@ export default function App() {
   };
 
   const handleDeleteNote = (noteId: string) => {
-    setAppData((prev) => ({
+    updateAppData((prev) => ({
       ...prev,
       notes: prev.notes.filter((n) => n.id !== noteId),
     }));
@@ -652,7 +679,7 @@ export default function App() {
           }
           showToast('Lien du voyage copié dans le presse-papier !');
         }}
-        onOpenSyncModal={() => setIsSyncModalOpen(true)}
+        onExportZip={handleExportZip}
         activeTab={activeTab}
         onSelectTab={setActiveTab}
         isMobilePreviewMode={isMobilePreviewMode}
@@ -1042,16 +1069,6 @@ export default function App() {
         }}
       />
 
-      {/* Data Sync & Firebase Settings Modal */}
-      <DataSyncModal
-        isOpen={isSyncModalOpen}
-        onClose={() => setIsSyncModalOpen(false)}
-        appData={appData}
-        onDataRestored={(newData) => {
-          setAppData(newData);
-          showToast('Données synchronisées avec succès !');
-        }}
-      />
     </div>
   );
 }
