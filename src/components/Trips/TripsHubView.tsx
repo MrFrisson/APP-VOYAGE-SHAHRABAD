@@ -184,9 +184,9 @@ export const TripsHubView: React.FC<TripsHubViewProps> = ({
                   </div>
 
                   {/* Card Actions */}
-                  <div className="pt-3 border-t border-[rgba(198,165,106,0.15)] flex items-center justify-between gap-2">
+                  <div className="pt-3 border-t border-[rgba(198,165,106,0.15)] flex items-center justify-between gap-2 flex-wrap">
                     {/* Secondary Actions */}
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 shrink-0">
                       <button
                         onClick={() => onEditTrip(trip)}
                         title="Modifier ce voyage"

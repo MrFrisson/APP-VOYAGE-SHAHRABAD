@@ -348,7 +348,7 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
                   </div>
 
                   {/* Actions (Reorder, Edit, Delete, Google Maps) */}
-                  <div className="flex items-center gap-1 self-end sm:self-start bg-[#0b0f14] p-1.5 rounded-xl border border-[rgba(198,165,106,0.18)]">
+                  <div className="flex items-center gap-1 self-start bg-[#0b0f14] p-1.5 rounded-xl border border-[rgba(198,165,106,0.18)] shrink-0 flex-wrap">
                     <button
                       onClick={() => handleMoveStep(index, 'up')}
                       disabled={index === 0}

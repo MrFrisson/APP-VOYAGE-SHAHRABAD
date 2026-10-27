@@ -355,30 +355,30 @@ export const BudgetView: React.FC<BudgetViewProps> = ({
       </div>
 
       {/* Sub-tab switcher: Overview vs Tricount */}
-      <div className="flex items-center gap-1.5 p-1 bg-[#111820] rounded-xl border border-[rgba(198,165,106,0.2)] text-xs w-fit">
+      <div className="flex flex-wrap items-center gap-1.5 p-1 bg-[#111820] rounded-xl border border-[rgba(198,165,106,0.2)] text-xs w-full sm:w-fit">
         <button
           type="button"
           onClick={() => setBudgetSubTab('overview')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition-all cursor-pointer ${
+          className={`flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg font-bold transition-all cursor-pointer flex-1 sm:flex-initial ${
             budgetSubTab === 'overview'
               ? 'bg-[#c6a56a] text-[#0b0f14] shadow-md'
               : 'text-[#98a2a8] hover:text-[#edf0eb]'
           }`}
         >
           <PieChart className="w-3.5 h-3.5" />
-          <span>Vue d'ensemble & Catégories</span>
+          <span>Vue d'ensemble</span>
         </button>
         <button
           type="button"
           onClick={() => setBudgetSubTab('tricount')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition-all cursor-pointer ${
+          className={`flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg font-bold transition-all cursor-pointer flex-1 sm:flex-initial ${
             budgetSubTab === 'tricount'
               ? 'bg-[#c6a56a] text-[#0b0f14] shadow-md'
               : 'text-[#98a2a8] hover:text-[#edf0eb]'
           }`}
         >
           <Users className="w-3.5 h-3.5" />
-          <span>Équilibre Tricount (Partage à plusieurs)</span>
+          <span>Tricount (Partage)</span>
         </button>
       </div>
 
@@ -392,7 +392,7 @@ export const BudgetView: React.FC<BudgetViewProps> = ({
       ) : (
         <>
           {/* KPI Financial Overview Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
         {/* Forecast Previsional Budget */}
         <div className="bg-slate-900/90 rounded-2xl border border-slate-800 p-4 shadow-lg flex flex-col justify-between">
           <div className="flex items-center justify-between">

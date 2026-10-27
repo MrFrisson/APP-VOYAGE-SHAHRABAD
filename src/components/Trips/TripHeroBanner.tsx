@@ -70,31 +70,31 @@ export const TripHeroBanner: React.FC<TripHeroBannerProps> = ({
       </div>
 
       {/* Hero Content */}
-      <div className="relative z-10 p-6 sm:p-10 flex flex-col justify-between min-h-[310px]">
+      <div className="relative z-10 p-4 sm:p-8 lg:p-10 flex flex-col justify-between min-h-[260px] sm:min-h-[310px]">
         {/* Top Badges & Switcher */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#eadcc0] bg-[rgba(21,29,38,0.85)] backdrop-blur-md px-3.5 py-1.5 rounded-full border border-[rgba(198,165,106,0.35)] flex items-center gap-2 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-2.5">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#eadcc0] bg-[rgba(21,29,38,0.85)] backdrop-blur-md px-3 py-1.5 rounded-full border border-[rgba(198,165,106,0.35)] flex items-center gap-1.5 shadow-sm">
               <Compass className="w-3.5 h-3.5 text-[#c6a56a]" />
-              <span>{trip.countries.join(' · ')}</span>
+              <span className="truncate max-w-[200px]">{trip.countries.join(' · ')}</span>
             </span>
 
             <button
               type="button"
               onClick={onSelectOtherTrip}
-              className="text-xs text-[#98a2a8] hover:text-[#edf0eb] bg-[rgba(17,24,32,0.8)] hover:bg-[#17212b] backdrop-blur-md px-3.5 py-1.5 rounded-full border border-[rgba(255,255,255,0.09)] transition-colors font-mono cursor-pointer"
+              className="text-xs text-[#98a2a8] hover:text-[#edf0eb] bg-[rgba(17,24,32,0.8)] hover:bg-[#17212b] backdrop-blur-md px-3 py-1.5 rounded-full border border-[rgba(255,255,255,0.09)] transition-colors font-mono cursor-pointer"
             >
               Tous mes voyages ({tripsCount})
             </button>
           </div>
 
           {/* Action buttons (Share, Edit, Duplicate, Delete) */}
-          <div className="flex items-center gap-1.5 bg-[rgba(11,15,20,0.8)] backdrop-blur-md p-1.5 rounded-full border border-[rgba(198,165,106,0.22)]">
+          <div className="flex items-center gap-1 bg-[rgba(11,15,20,0.85)] backdrop-blur-md p-1 rounded-full border border-[rgba(198,165,106,0.22)] shrink-0">
             {onShareTrip && (
               <button
                 onClick={onShareTrip}
                 title="Partager ce voyage"
-                className="flex items-center gap-1.5 px-3 py-1 text-xs text-[#eadcc0] hover:text-[#c6a56a] hover:bg-[#17212b] rounded-full transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 px-2.5 py-1 text-xs text-[#eadcc0] hover:text-[#c6a56a] hover:bg-[#17212b] rounded-full transition-colors cursor-pointer"
               >
                 <Share2 className="w-3.5 h-3.5 text-[#c6a56a]" />
                 <span className="hidden sm:inline font-medium">Partager</span>
@@ -103,21 +103,21 @@ export const TripHeroBanner: React.FC<TripHeroBannerProps> = ({
             <button
               onClick={onEditTrip}
               title="Modifier ce voyage"
-              className="p-2 text-[#98a2a8] hover:text-[#c6a56a] hover:bg-[#17212b] rounded-full transition-colors cursor-pointer"
+              className="p-1.5 sm:p-2 text-[#98a2a8] hover:text-[#c6a56a] hover:bg-[#17212b] rounded-full transition-colors cursor-pointer"
             >
               <Edit2 className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={onDuplicateTrip}
               title="Dupliquer ce voyage"
-              className="p-2 text-[#98a2a8] hover:text-[#c6a56a] hover:bg-[#17212b] rounded-full transition-colors cursor-pointer"
+              className="p-1.5 sm:p-2 text-[#98a2a8] hover:text-[#c6a56a] hover:bg-[#17212b] rounded-full transition-colors cursor-pointer"
             >
               <Copy className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={onDeleteTrip}
               title="Supprimer ce voyage"
-              className="p-2 text-[#b84f4b] hover:text-[#d4635d] hover:bg-[rgba(184,79,75,0.2)] rounded-full transition-colors cursor-pointer"
+              className="p-1.5 sm:p-2 text-[#b84f4b] hover:text-[#d4635d] hover:bg-[rgba(184,79,75,0.2)] rounded-full transition-colors cursor-pointer"
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
@@ -125,19 +125,19 @@ export const TripHeroBanner: React.FC<TripHeroBannerProps> = ({
         </div>
 
         {/* Title, Description & Key Metrics */}
-        <div className="mt-8 space-y-3 max-w-3xl">
-          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-serif font-black text-[#edf0eb] tracking-tight leading-tight">
+        <div className="mt-5 sm:mt-8 space-y-2.5 max-w-3xl">
+          <h1 className="text-xl sm:text-3xl lg:text-4xl font-serif font-black text-[#edf0eb] tracking-tight leading-snug break-words">
             {trip.title}
           </h1>
 
           {trip.description && (
-            <p className="text-sm sm:text-base text-[#c4cbc7] leading-relaxed max-w-2xl font-light">
+            <p className="text-xs sm:text-sm text-[#c4cbc7] leading-relaxed max-w-2xl font-light line-clamp-3 sm:line-clamp-none">
               {trip.description}
             </p>
           )}
 
           {/* KPI Strip */}
-          <div className="pt-4 flex flex-wrap items-center gap-3 sm:gap-4 text-xs text-[#edf0eb]">
+          <div className="pt-2 sm:pt-4 flex flex-wrap items-center gap-2 sm:gap-3 text-xs text-[#edf0eb]">
             <div className="flex items-center gap-2 bg-[rgba(21,29,38,0.88)] backdrop-blur-md px-3.5 py-2 rounded-xl border border-[rgba(198,165,106,0.2)]">
               <Calendar className="w-4 h-4 text-[#c6a56a]" />
               <span>

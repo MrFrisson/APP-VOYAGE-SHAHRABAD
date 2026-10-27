@@ -47,6 +47,9 @@ import {
   FileText,
   Bookmark,
   CheckCircle2,
+  Smartphone,
+  Monitor,
+  Plus,
 } from 'lucide-react';
 
 export default function App() {
@@ -657,21 +660,78 @@ export default function App() {
       />
 
       {/* Device Mode Wrapper (Computer full-width vs. Mobile phone mockup) */}
-      <div className={isMobilePreviewMode ? "py-8 px-4 flex justify-center bg-[#05070a] min-h-[calc(100vh-65px)]" : "flex-1 flex flex-col"}>
-        <div className={isMobilePreviewMode ? "w-full max-w-[430px] bg-[#070a0e] rounded-[48px] border-[10px] border-[#1d2632] shadow-[0_25px_80px_rgba(0,0,0,0.85)] overflow-hidden flex flex-col relative ring-1 ring-[rgba(198,165,106,0.35)] min-h-[840px]" : "flex-1 flex flex-col"}>
+      <div className={isMobilePreviewMode ? "py-6 px-4 flex flex-col items-center bg-[#05070a] min-h-[calc(100vh-65px)]" : "flex-1 flex flex-col"}>
+        {isMobilePreviewMode && (
+          <div className="w-full max-w-[420px] mb-3 flex items-center justify-between text-xs bg-[#111820] border border-[rgba(198,165,106,0.3)] rounded-2xl px-4 py-2.5 text-[#edf0eb] shadow-lg">
+            <span className="flex items-center gap-2 font-medium text-[#eadcc0]">
+              <Smartphone className="w-4 h-4 text-[#c6a56a]" />
+              <span>Aperçu Mobile (390px)</span>
+            </span>
+            <button
+              onClick={() => setIsMobilePreviewMode(false)}
+              className="flex items-center gap-1.5 text-xs text-[#0b0f14] bg-gradient-to-r from-[#c6a56a] to-[#d8b97e] font-bold px-3 py-1 rounded-full shadow hover:brightness-110 cursor-pointer transition-all"
+            >
+              <Monitor className="w-3.5 h-3.5" />
+              <span>Vue Ordinateur</span>
+            </button>
+          </div>
+        )}
+
+        <div className={isMobilePreviewMode ? "w-full max-w-[420px] bg-[#070a0e] rounded-[48px] border-[10px] border-[#1d2632] shadow-[0_25px_80px_rgba(0,0,0,0.85)] flex flex-col relative ring-1 ring-[rgba(198,165,106,0.35)] h-[844px] overflow-hidden is-mobile-frame" : "flex-1 flex flex-col"}>
           {isMobilePreviewMode && (
-            <div className="w-full bg-[#111820] py-2.5 px-6 flex items-center justify-between text-[11px] text-[#98a2a8] border-b border-[rgba(198,165,106,0.2)] select-none shrink-0">
-              <span className="font-mono text-[#eadcc0] font-semibold">09:41</span>
-              {/* Dynamic Island Pill */}
-              <div className="w-24 h-4 bg-[#070a0e] rounded-full mx-auto border border-[#222f3d] flex items-center justify-center">
-                <div className="w-2.5 h-2.5 rounded-full bg-[#151d26]" />
+            <>
+              {/* Phone Status Bar */}
+              <div className="w-full bg-[#111820] py-2 px-5 flex items-center justify-between text-[11px] text-[#98a2a8] border-b border-[rgba(198,165,106,0.15)] select-none shrink-0">
+                <span className="font-mono text-[#eadcc0] font-semibold">09:41</span>
+                {/* Dynamic Island Pill */}
+                <div className="w-24 h-4 bg-[#070a0e] rounded-full mx-auto border border-[#222f3d] flex items-center justify-center">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#151d26]" />
+                </div>
+                <span className="text-[10px] font-mono text-[#c6a56a] font-semibold">5G 100%</span>
               </div>
-              <span className="text-[10px] font-mono text-[#c6a56a] font-semibold">5G 100%</span>
-            </div>
+
+              {/* Native Mobile In-App Top Bar */}
+              <div className="w-full bg-[#0b0f14]/95 py-2 px-3 border-b border-[rgba(198,165,106,0.2)] flex items-center justify-between shrink-0 z-20">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('trips')}
+                  className="flex items-center gap-1.5 text-left cursor-pointer"
+                  title="Mes voyages"
+                >
+                  <span className="w-6 h-6 rounded-full border border-[#c6a56a] flex items-center justify-center text-[#c6a56a] bg-[#111820] text-xs">
+                    🧭
+                  </span>
+                  <span className="text-xs font-serif font-bold text-[#edf0eb]">Shahrabad</span>
+                </button>
+
+                {currentTrip && (
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('trips')}
+                    className="text-[11px] text-[#eadcc0] bg-[#111820] px-2.5 py-1 rounded-full border border-[rgba(198,165,106,0.25)] truncate max-w-[170px] cursor-pointer hover:border-[#c6a56a]"
+                    title="Changer de voyage"
+                  >
+                    {currentTrip.title}
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingTrip(null);
+                    setIsTripModalOpen(true);
+                  }}
+                  className="p-1 rounded-full bg-[#c6a56a] text-[#0b0f14] hover:brightness-110 cursor-pointer"
+                  title="Nouveau voyage"
+                >
+                  <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                </button>
+              </div>
+            </>
           )}
 
           {/* Main Container */}
-          <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 lg:pb-12">
+          <main className={isMobilePreviewMode ? "flex-1 overflow-y-auto px-3.5 py-4 space-y-4 pb-20" : "flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 lg:pb-12"}>
             {/* Tab: Dedicated Trips Hub View (Mes Voyages) or when zero trips exist */}
             {(activeTab === 'trips' || !currentTrip) && (
               <TripsHubView
@@ -945,7 +1005,16 @@ export default function App() {
           </main>
 
           {/* Mobile Touch-First Tab Bar */}
-          <MobileTabBar activeTab={activeTab} onSelectTab={setActiveTab} />
+          <MobileTabBar
+            activeTab={activeTab}
+            onSelectTab={setActiveTab}
+            isInsidePhoneMockup={isMobilePreviewMode}
+          />
+          {isMobilePreviewMode && (
+            <div className="py-1.5 bg-[#0b0f14] shrink-0 border-t border-slate-900/60 select-none">
+              <div className="w-28 h-1 bg-slate-600 rounded-full mx-auto" />
+            </div>
+          )}
         </div>
       </div>
 

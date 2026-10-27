@@ -126,3 +126,60 @@
   transition: filter 0.3s ease;
 }
 
+/* -------------------------------------------------------------
+ * Mobile Phone Simulator Frame Responsive Overrides
+ * Ensures single-column stacking, clean button layouts, and
+ * prevents text collision inside the 390-420px mobile mockup
+ * ------------------------------------------------------------- */
+.is-mobile-frame {
+  max-width: 420px !important;
+}
+
+.is-mobile-frame .grid:not(.grid-cols-2) {
+  grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+}
+
+.is-mobile-frame .sm\:grid-cols-2,
+.is-mobile-frame .sm\:grid-cols-3,
+.is-mobile-frame .sm\:grid-cols-4,
+.is-mobile-frame .md\:grid-cols-2,
+.is-mobile-frame .md\:grid-cols-3,
+.is-mobile-frame .md\:grid-cols-4,
+.is-mobile-frame .lg\:grid-cols-3,
+.is-mobile-frame .lg\:grid-cols-4 {
+  grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+}
+
+/* Allow compact 2-column key metric chips */
+.is-mobile-frame .grid.grid-cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+.is-mobile-frame .sm\:flex-row,
+.is-mobile-frame .md\:flex-row {
+  flex-direction: column !important;
+  align-items: stretch !important;
+}
+
+.is-mobile-frame h1 {
+  font-size: 1.5rem !important;
+  line-height: 1.25 !important;
+}
+
+.is-mobile-frame h2 {
+  font-size: 1.25rem !important;
+}
+
+.is-mobile-frame main {
+  max-width: 100% !important;
+  padding-left: 0.75rem !important;
+  padding-right: 0.75rem !important;
+  padding-top: 0.75rem !important;
+}
+
+.is-mobile-frame .step-action-bar {
+  flex-wrap: wrap !important;
+  align-self: flex-start !important;
+}
+
+
